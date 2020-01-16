@@ -1,5 +1,5 @@
 # zynq-benchmark
-Build tools to build Linux images for and benchmark the Mars ZX2 SoC module
+Build tools to build Linux images for and benchmark the Mars ZX2 SoC module. `create_project.sh` adapted from script written by Peter Wittich at Cornell University, with minor modifications.
 
 ### Build instructions
 1. Install the Petalinux build chain. Activate it with `source /opt/petalinux/settings.sh`, or wherever it is installed.
