@@ -1,0 +1,23 @@
+gcc_dry2:                                                     
+Dhrystones per Second:                      3030303.0         
+Dhrystones per Second:                      3125000.0         
+Dhrystones per Second:                      3030303.0         
+Dhrystones per Second:                      3125000.0         
+Dhrystones per Second:                      3030303.0         
+Dhrystones per Second:                      3125000.0         
+Dhrystones per Second:                      3030303.0         
+Dhrystones per Second:                      3125000.0         
+Dhrystones per Second:                      3125000.0         
+Dhrystones per Second:                      3030303.0         
+                                                              
+gcc_dry2reg:                                                  
+Dhrystones per Second:                      3125000.0         
+Dhrystones per Second:                      3030303.0         
+Dhrystones per Second:                      3125000.0         
+Dhrystones per Second:                      3125000.0         
+Dhrystones per Second:                      3030303.0         
+Dhrystones per Second:                      3030303.0         
+Dhrystones per Second:                      3125000.0         
+Dhrystones per Second:                      3125000.0         
+Dhrystones per Second:                      3030303.0         
+Dhrystones per Second:                      3125000.0         
