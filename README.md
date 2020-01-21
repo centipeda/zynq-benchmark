@@ -84,6 +84,10 @@ Source code for the Whetstone benchmark was obtained from here: https://www.netl
 3. The result of the benchmark is sent to stdout as "C Converted Double Precision Whetstones: `N` MIPS", where `N` is the raw benchmark score for the processor.
 
 
+These results were obtained with the scripts in [benchmark_scripts/coremark](./benchmark_scripts/coremark). \
+10-run sample results (Whetstones/second):
+* Mean: 1462.08
+* Standard Deviation: 10.99
 
 ### Notes
 * If an error such as `XSCTHELPER INFO: Empty Workspace` appears during the build process, rebooting the build computer may resolve the issue.
