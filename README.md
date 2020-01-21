@@ -18,6 +18,7 @@ Build tools to build Linux images for and benchmark the Mars ZX2 SoC module. `cr
 ### Boot instructions
 (Assuming the ZX2 is on the Mars PM3 interface board, which has a MicroSD slot and serial UART port):
 1. Using your partition editor of choice, create two partitions on a MicroSD card: the first should be offset from the beginning of the card by 4MB, at least 64MB in size, and FAT-formatted. Name this partition `boot`. The second partition can take up the rest of the space on the MicroSD card, and should be formatted as ext4. Name this partition `rootfs`.
+
 2. Mount the MicroSD card.
 3. From the `images/linux` folder, copy `image.ub` and `BOOT.BIN` to the `boot` partition.
 4. From the same folder, extract the root file system to the `rootfs` partition with `tar xzf rootfs.tar.gz -C /path/to/rootfs`.
@@ -61,15 +62,28 @@ Instructions adapted from: https://wiki.cdot.senecacollege.ca/wiki/Dhrystone_how
 3. Compile the benchmark with `make`.
 4. Run the benchmark by running either `gcc_dry2` or `gcc_dry2reg`. The former program will not use registers, while the latter will.
 
+These results were obtained with the scripts in [benchmark_scripts/dhrystone](./benchmark_scripts/dhrystone). \
+10-run sample results, gcc_dry2reg:
+* Mean: 43077651.5 Dhrystones/second
+* Standard Deviation: 49909.7
+* Mean, adjusted with VAX Dhrystones: 1751.651 VAX MIPS
+
+
+10-run sample results, gcc_dry2:
+* Mean:  3082912.4 Dhrystones/second
+* Standard Deviation: 49909.7
+* Mean, adjusted with VAX Dhrystones: 1754.654 VAX MIPS
 
 **Whetstone** 
 
 Source code for the Whetstone benchmark was obtained from here: https://www.netlib.org/benchmark/whetstone.c.
 
 1. Download the Whetstone source code with something like `wget https://www.netlib.org/benchmark/whetstone.c`.
-1. Compile the Whetstone source code with gcc, using `gcc whetstone.c -o whetstone`.
-2. Run the benchmark by executing `whetstone`. The number of "loops" the program performs to benchmark can be passed as a command line argument, as `whetstone 1000000`. To run the benchmark continuously, use `whetstone -c`.
-3. The result of the benchmark is sent to stdout as "C Converted Double Precision Whetstones: `foo` MIPS", where `foo is the raw benchmark score for the processor.
+1. Compile the Whetstone source code with gcc, using `gcc whetstone.c [compiler flags] -lm -o whetstone`. 
+ 2. Run the benchmark by running `./whetstone [loop_count]`, where `[loop_count]` is the number of "loops" Whetstone performs. For our results, we used 1000000 loops, so the command to use is`whetstone 1000000`. To run the benchmark continuously, run `whetstone` with the `-c` flag.
+3. The result of the benchmark is sent to stdout as "C Converted Double Precision Whetstones: `N` MIPS", where `N` is the raw benchmark score for the processor.
+
+
 
 ### Notes
-* If an error such as `XSCTHELPER INFO: Empty WorkSpace` comes up during the build process, rebooting the build computer may resolve the issue.
+* If an error such as `XSCTHELPER INFO: Empty Workspace` appears during the build process, rebooting the build computer may resolve the issue.
