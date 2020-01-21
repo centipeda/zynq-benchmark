@@ -50,7 +50,16 @@ These results were obtained with the scripts in [benchmark_scripts/coremark](./b
 
 **Dhrystone 2.1**
 
-Source code for the Dhrystone v2.1 benchmark was obtained from here: https://github.com/Keith-S-Thompson/dhrystone/tree/master/v2.1.
+Source code for the Dhrystone v2.1 benchmark was obtained from here: https://fossies.org/linux/privat/old/dhrystone-2.1.tar.gz/ \
+Instructions adapted from: https://wiki.cdot.senecacollege.ca/wiki/Dhrystone_howto
+
+1. Download and unpack the Dhrystone source tarball: `wget https://fossies.org/linux/privat/old/dhrystone-2.1.tar.gz/ && tar xzf dhrystone-2.1.tar.gz`
+2. Make the following modifications to the `Makefile`: 
+    * Comment out the line with `TIME_FUNC=  -DTIMES`
+    * Uncomment the line with `TIME_FUNC=  -DTIME`
+    * Add the necessary compiler flags after `GCCOPTIM=` (listed above, in our case)
+3. Compile the benchmark with `make`.
+4. Run the benchmark by running either `gcc_dry2` or `gcc_dry2reg`. The former program will not use registers, while the latter will.
 
 
 **Whetstone** 
