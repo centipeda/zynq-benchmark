@@ -32,15 +32,21 @@ Build tools to build Linux images for and benchmark the Mars ZX2 SoC module. `cr
 ### Benchmarking
 While logged into the ZX2, check to make sure the desired packages were built in successfully with `which gcc`, `which git`, etc. If not, it may be necessary to rebuild the image.
 
-Since these benchmarks all involve the compiler, the nature of the compiler flags used can affect the benchmarking results to a great extent (Dhrystone and Whestone moreso than CoreMark.) As such, using the same compiler flags between runs and devices is important for getting comparable results. All of the following benchmarks were run with the following `gcc` compiler flags: `-O3 -Ofast --mcpu=cortex-a9 -mfpu=vfpv3-fp16 –DNDEBUG`, to keep with [other benchmarks by Xilinx](https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/18842551/Zc702+Benchmark).
+Since these benchmarks all involve the compiler, the nature of the compiler flags used can affect the benchmarking results to a great extent (Dhrystone and Whestone moreso than CoreMark.) As such, using the same compiler flags between runs and devices is important for getting comparable results. All of the following benchmarks were run with the following `gcc` compiler flags: `-O3 -Ofast --mcpu=cortex-a9 -mfpu=vfpv3-fp16 –DNDEBUG`, to keep with [other benchmarks by Xilinx](https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/18842551/Zc702+Benchmark), unless specified otherwise.
 
 **CoreMark**
 
 1. If you are connected to the internet, `git clone https://github.com/eembc/coremark` to get the [CoreMark repository](https://github.com/eembc/coremark). Otherwise, copy the contents of that repository to the root file system through some means. Internet access is not required to run the benchmark.
 2. Enter the newly cloned repository, `coremark`.
-3. To run the benchmark, use `make`. By default, the run logs are output to `run1.log` and `run2.log`.
+3. To run the benchmark, use `make`. By default, the run logs are output to `run1.log` and `run2.log`. To use specific compiler flags, run `make` and set the XCFLAGS to a string with the flags. To keep with the [other Zynq CoreMark benchmarks that are available at the time of writing](https://www.eembc.org/coremark/view.php?benchmark_seq=2550,1473,1474,1418), we use the following set of compiler flags: ` -O3 -march=armv7-a -mcpu=cortex-a9 -mfpu=neon-fp16 -DPERFORMANCE_RUN=1 -DMULTITHREAD=2 -DUSE_PTHREAD -lpthread -DPERFORMANCE_RUN=1 -lrt`.
 
-More details about the benchmark are available at https://www.eembc.org/coremark/.
+`run1.log` records the performance run, and is where the actual benchmark results are stored. `run2.log` records the validation run, which ensures that CoreMark was run and finished properly. More details about CoreMark are available on the [EEMBC website](https://www.eembc.org/coremark/).
+
+These results were obtained with the scripts in [benchmark_scripts/coremark](./benchmark_scripts/coremark). \
+10-run sample results (iterations/second):
+* Mean: 4961.007
+* Standard Deviation: 0.94126
+
 
 **Dhrystone 2.1**
 
@@ -58,4 +64,3 @@ Source code for the Whetstone benchmark was obtained from here: https://www.netl
 
 ### Notes
 * If an error such as `XSCTHELPER INFO: Empty WorkSpace` comes up during the build process, rebooting the build computer may resolve the issue.
-* The "CoreMark Score" reported on the EEMBC website is the "Iterations/Sec" seen in the CoreMark run logs.
