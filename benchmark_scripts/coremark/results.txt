@@ -9,4 +9,3 @@ CoreMark 1.0 : 4960.317460 / GCC6.2.1 20161016 -O2 -O3 -march=armv7-a -mcpu=cort
 CoreMark 1.0 : 4960.625039 / GCC6.2.1 20161016 -O2 -O3 -march=armv7-a -mcpu=cortex-a9 -mfpu=neon-fp16 -march=armv7-a -DMULTITHREAD=2 -DUSE_PTHREAD -lpthread -lrt -DPERFORMANCE_RUN=1  -lrt / Heap / 2:PThreads
 CoreMark 1.0 : 4960.317460 / GCC6.2.1 20161016 -O2 -O3 -march=armv7-a -mcpu=cortex-a9 -mfpu=neon-fp16 -march=armv7-a -DMULTITHREAD=2 -DUSE_PTHREAD -lpthread -lrt -DPERFORMANCE_RUN=1  -lrt / Heap / 2:PThreads
 CoreMark 1.0 : 4961.548003 / GCC6.2.1 20161016 -O2 -O3 -march=armv7-a -mcpu=cortex-a9 -mfpu=neon-fp16 -march=armv7-a -DMULTITHREAD=2 -DUSE_PTHREAD -lpthread -lrt -DPERFORMANCE_RUN=1  -lrt / Heap / 2:PThreads
-
