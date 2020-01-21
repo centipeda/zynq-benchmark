@@ -32,6 +32,8 @@ Build tools to build Linux images for and benchmark the Mars ZX2 SoC module. `cr
 ### Benchmarking
 While logged into the ZX2, check to make sure the desired packages were built in successfully with `which gcc`, `which git`, etc. If not, it may be necessary to rebuild the image.
 
+Since these benchmarks all involve the compiler, the nature of the compiler flags used can affect the benchmarking results to a great extent (Dhrystone and Whestone moreso than CoreMark.) As such, using the same compiler flags between runs and devices is important for getting comparable results. All of the following benchmarks were run with the following `gcc` compiler flags: `-O3 -Ofast --mcpu=cortex-a9 -mfpu=vfpv3-fp16 –DNDEBUG`, to keep with [other benchmarks by Xilinx](https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/18842551/Zc702+Benchmark).
+
 **CoreMark**
 
 1. If you are connected to the internet, `git clone https://github.com/eembc/coremark` to get the [CoreMark repository](https://github.com/eembc/coremark). Otherwise, copy the contents of that repository to the root file system through some means. Internet access is not required to run the benchmark.
@@ -40,6 +42,19 @@ While logged into the ZX2, check to make sure the desired packages were built in
 
 More details about the benchmark are available at https://www.eembc.org/coremark/.
 
+**Dhrystone 2.1**
+
+Source code for the Dhrystone v2.1 benchmark was obtained from here: https://github.com/Keith-S-Thompson/dhrystone/tree/master/v2.1.
+
+
+**Whetstone** 
+
+Source code for the Whetstone benchmark was obtained from here: https://www.netlib.org/benchmark/whetstone.c.
+
+1. Download the Whetstone source code with something like `wget https://www.netlib.org/benchmark/whetstone.c`.
+1. Compile the Whetstone source code with gcc, using `gcc whetstone.c -o whetstone`.
+2. Run the benchmark by executing `whetstone`. The number of "loops" the program performs to benchmark can be passed as a command line argument, as `whetstone 1000000`. To run the benchmark continuously, use `whetstone -c`.
+3. The result of the benchmark is sent to stdout as "C Converted Double Precision Whetstones: `foo` MIPS", where `foo is the raw benchmark score for the processor.
 
 ### Notes
 * If an error such as `XSCTHELPER INFO: Empty WorkSpace` comes up during the build process, rebooting the build computer may resolve the issue.
