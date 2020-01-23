@@ -1,5 +1,5 @@
 # zynq-benchmark
-Build tools to build Linux images for and benchmark the Mars ZX2 SoC module. `create_project.sh` adapted from script written by Peter Wittich at Cornell University, with minor modifications.
+Build tools to build Linux images for and benchmark the Mars ZX2 SoC module. `create_project.sh` adapted from script written by Peter Wittich at Cornell University, with minor modifications. Various scripts used for running the benchmark programs.
 
 ### Build instructions
 1. Install the Petalinux build chain. Activate it with `source /opt/petalinux/settings.sh`, or wherever it is installed.
@@ -91,4 +91,4 @@ These results were obtained with the scripts in [benchmark_scripts/coremark](./b
 
 ### Notes
 * If an error such as `XSCTHELPER INFO: Empty Workspace` appears during the build process, rebooting the build computer may resolve the issue.
-* All benchmarks were run on a Zynq Z-7020 armv7 Cortex-A9 MPCore processor, with gcc version 6.2.1.
+* All benchmarks were run on a Zynq Z-7020 armv7 Cortex-A9 MPCore processor on a Mars PM3 evaluation board, with gcc version 6.2.1.
