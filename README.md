@@ -64,7 +64,7 @@ Instructions adapted from: https://wiki.cdot.senecacollege.ca/wiki/Dhrystone_how
 
 These results were obtained with the scripts in [benchmark_scripts/dhrystone](./benchmark_scripts/dhrystone). \
 10-run sample results, gcc_dry2reg:
-* Mean: 43077651.5 Dhrystones/second
+* Mean: 3077651.5 Dhrystones/second
 * Standard Deviation: 49909.7
 * Mean, adjusted with VAX Dhrystones: 1751.651 VAX MIPS
 
