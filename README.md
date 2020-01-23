@@ -91,3 +91,4 @@ These results were obtained with the scripts in [benchmark_scripts/coremark](./b
 
 ### Notes
 * If an error such as `XSCTHELPER INFO: Empty Workspace` appears during the build process, rebooting the build computer may resolve the issue.
+* All benchmarks were run on a Zynq Z-7020 armv7 Cortex-A9 MPCore processor, with gcc version 6.2.1.
