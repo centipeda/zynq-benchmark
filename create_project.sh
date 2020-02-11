@@ -2,6 +2,9 @@
 
 # Usage: ./create_project.sh <project_name>
 
+# Author: Peter Wittich, Cornell University
+# Minor modifications made by Joshua Cepeda, @centipeda
+
 # Prerequisites:
 #  1. petalinux v2017.4 installed in /opt/petalinux
 #  2. source /opt/petalinux/settings.sh
@@ -9,7 +12,7 @@
 #  4. export PATH=/opt/petalinux/components/yocto/source/aarch64/layers/core/bitbake/bin:$PATH
 
 #BASEDIR=/mnt/scratch/wittich/tracklet/firmware/TrackletProject/YUGE/BoardTest/Zynq2/MarsZX2_6089_101_revA
-#I'm assuming that you're cwd is here
+# I'm assuming that your cwd is here
 BASEDIR=`pwd`
 HDW=${BASEDIR}/Vivado/Vivado_PM3/MarsZX2_PM3.sdk
 
@@ -162,8 +165,6 @@ petalinux-package --boot --fsbl images/linux/zynq_fsbl.elf --fpga images/linux/s
 # 1. the first partition must be FAT and at least 64 MB, and bootable
 # 2. the second partition can be ext4 and take up the rest of the card.
 
-# by default petalinux will boot into a RAMFS.
-
 # the default project sets the root file system to an INITRAMFS
-
-# to tell the kernel to use a persistent root file system, must
+# to tell the kernel to use a persistent root file system, must set 
+# configuration setting in petalinux-config
