@@ -1,10 +1,12 @@
 ### Running Benchmarks
-**Requirements: **
+**Requirements:**
 1. Device is connected to the internet
 2. git, make
-3. gcc <what version?>
-Check the correct version is installed using:
-``` $ which gcc ```
+3. gcc v6.2.1 \
+   Check the correct version is installed using:
+   ```
+   $ gcc -v
+   ```
 
 **Compiler flags**
 Since these benchmarks all involve the compiler, the nature of the compiler flags used can affect the benchmarking results to a great extent (Dhrystone and Whestone moreso than CoreMark.) As such, using the same compiler flags between runs and devices is important for getting comparable results. So as to enable comparison with [other benchmarks by Xilinx](https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/18842551/Zc702+Benchmark), unless specified otherwise run the benchmarks with the following flags:
