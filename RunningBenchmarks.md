@@ -1,5 +1,6 @@
-### Running Benchmarks
-**Requirements:**
+# Running Benchmarks
+
+## Requirements
 1. Device is connected to the internet
 2. git, make
 3. gcc v6.2.1 \
@@ -8,11 +9,11 @@
    $ gcc -v
    ```
 
-**Compiler flags**
+## Compiler flags
 Since these benchmarks all involve the compiler, the nature of the compiler flags used can affect the benchmarking results to a great extent (Dhrystone and Whestone moreso than CoreMark.) As such, using the same compiler flags between runs and devices is important for getting comparable results. So as to enable comparison with [other benchmarks by Xilinx](https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/18842551/Zc702+Benchmark), unless specified otherwise run the benchmarks with the following flags:
 * `gcc` compiler flags: `-O3 -Ofast --mcpu=cortex-a9 -mfpu=vfpv3-fp16 –DNDEBUG`, 
 
-**CoreMark**
+## CoreMark
 
 1. If you are connected to the internet, `git clone https://github.com/eembc/coremark` to get the [CoreMark repository](https://github.com/eembc/coremark). Otherwise, copy the contents of that repository to the root file system through some means. Internet access is not required to run the benchmark.
 2. Enter the newly cloned repository, `coremark`.
@@ -26,7 +27,7 @@ These results were obtained with the scripts in [benchmark_scripts/coremark](./b
 * Standard Deviation: 0.94126
 
 
-**Dhrystone 2.1**
+## Dhrystone 2.1
 
 Source code for the Dhrystone v2.1 benchmark was obtained from here: https://fossies.org/linux/privat/old/dhrystone-2.1.tar.gz/ \
 Instructions adapted from: https://wiki.cdot.senecacollege.ca/wiki/Dhrystone_howto
@@ -51,7 +52,7 @@ These results were obtained with the scripts in [benchmark_scripts/dhrystone](./
 * Standard Deviation: 49909.7
 * Mean, adjusted with VAX Dhrystones: 1754.654 VAX MIPS
 
-**Whetstone** 
+## Whetstone
 
 Source code for the Whetstone benchmark was obtained from here: https://www.netlib.org/benchmark/whetstone.c.
 
