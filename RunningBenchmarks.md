@@ -32,7 +32,7 @@ These results were obtained with the scripts in [benchmark_scripts/coremark](./b
 Source code for the Dhrystone v2.1 benchmark was obtained from here: https://fossies.org/linux/privat/old/dhrystone-2.1.tar.gz/ \
 Instructions adapted from: https://wiki.cdot.senecacollege.ca/wiki/Dhrystone_howto
 
-1. Download and unpack the Dhrystone source tarball: `wget https://fossies.org/linux/privat/old/dhrystone-2.1.tar.gz/ && tar xzf dhrystone-2.1.tar.gz`
+1. Download and unpack the Dhrystone source tarball: `wget https://fossies.org/linux/privat/old/dhrystone-2.1.tar.gz && tar xzf dhrystone-2.1.tar.gz`
 2. Make the following modifications to the `Makefile`: 
     * Comment out the line with `TIME_FUNC=  -DTIMES`
     * Uncomment the line with `TIME_FUNC=  -DTIME`

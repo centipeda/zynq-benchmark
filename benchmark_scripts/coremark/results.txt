@@ -1,11 +1,10 @@
-CoreMark 1.0 : 4963.189677 / GCC6.2.1 20161016 -O2 -O3 -march=armv7-a -mcpu=cortex-a9 -mfpu=neon-fp16 -march=armv7-a -DMULTITHREAD=2 -DUSE_PTHREAD -lpthread -lrt -DPERFORMANCE_RUN=1  -lrt / Heap / 2:PThreads
-CoreMark 1.0 : 4961.548003 / GCC6.2.1 20161016 -O2 -O3 -march=armv7-a -mcpu=cortex-a9 -mfpu=neon-fp16 -march=armv7-a -DMULTITHREAD=2 -DUSE_PTHREAD -lpthread -lrt -DPERFORMANCE_RUN=1  -lrt / Heap / 2:PThreads
-CoreMark 1.0 : 4960.009920 / GCC6.2.1 20161016 -O2 -O3 -march=armv7-a -mcpu=cortex-a9 -mfpu=neon-fp16 -march=armv7-a -DMULTITHREAD=2 -DUSE_PTHREAD -lpthread -lrt -DPERFORMANCE_RUN=1  -lrt / Heap / 2:PThreads
-CoreMark 1.0 : 4961.240310 / GCC6.2.1 20161016 -O2 -O3 -march=armv7-a -mcpu=cortex-a9 -mfpu=neon-fp16 -march=armv7-a -DMULTITHREAD=2 -DUSE_PTHREAD -lpthread -lrt -DPERFORMANCE_RUN=1  -lrt / Heap / 2:PThreads
-CoreMark 1.0 : 4960.009920 / GCC6.2.1 20161016 -O2 -O3 -march=armv7-a -mcpu=cortex-a9 -mfpu=neon-fp16 -march=armv7-a -DMULTITHREAD=2 -DUSE_PTHREAD -lpthread -lrt -DPERFORMANCE_RUN=1  -lrt / Heap / 2:PThreads
-CoreMark 1.0 : 4961.548003 / GCC6.2.1 20161016 -O2 -O3 -march=armv7-a -mcpu=cortex-a9 -mfpu=neon-fp16 -march=armv7-a -DMULTITHREAD=2 -DUSE_PTHREAD -lpthread -lrt -DPERFORMANCE_RUN=1  -lrt / Heap / 2:PThreads
-CoreMark 1.0 : 4960.727573 / GCC6.2.1 20161016 -O2 -O3 -march=armv7-a -mcpu=cortex-a9 -mfpu=neon-fp16 -march=armv7-a -DMULTITHREAD=2 -DUSE_PTHREAD -lpthread -lrt -DPERFORMANCE_RUN=1  -lrt / Heap / 2:PThreads
-CoreMark 1.0 : 4960.317460 / GCC6.2.1 20161016 -O2 -O3 -march=armv7-a -mcpu=cortex-a9 -mfpu=neon-fp16 -march=armv7-a -DMULTITHREAD=2 -DUSE_PTHREAD -lpthread -lrt -DPERFORMANCE_RUN=1  -lrt / Heap / 2:PThreads
-CoreMark 1.0 : 4960.625039 / GCC6.2.1 20161016 -O2 -O3 -march=armv7-a -mcpu=cortex-a9 -mfpu=neon-fp16 -march=armv7-a -DMULTITHREAD=2 -DUSE_PTHREAD -lpthread -lrt -DPERFORMANCE_RUN=1  -lrt / Heap / 2:PThreads
-CoreMark 1.0 : 4960.317460 / GCC6.2.1 20161016 -O2 -O3 -march=armv7-a -mcpu=cortex-a9 -mfpu=neon-fp16 -march=armv7-a -DMULTITHREAD=2 -DUSE_PTHREAD -lpthread -lrt -DPERFORMANCE_RUN=1  -lrt / Heap / 2:PThreads
-CoreMark 1.0 : 4961.548003 / GCC6.2.1 20161016 -O2 -O3 -march=armv7-a -mcpu=cortex-a9 -mfpu=neon-fp16 -march=armv7-a -DMULTITHREAD=2 -DUSE_PTHREAD -lpthread -lrt -DPERFORMANCE_RUN=1  -lrt / Heap / 2:PThreads
+CoreMark 1.0 : 7919.746568 / GCC4.8.5 20150623 (Red Hat 4.8.5-39) -O2 -O3 -DMULTITHREAD=2 -DUSE_PTHREAD -lpthread -lrt -DPERFORMANCE_RUN=1  -lrt / Heap / 2:PThreads
+CoreMark 1.0 : 7790.690125 / GCC4.8.5 20150623 (Red Hat 4.8.5-39) -O2 -O3 -DMULTITHREAD=2 -DUSE_PTHREAD -lpthread -lrt -DPERFORMANCE_RUN=1  -lrt / Heap / 2:PThreads
+CoreMark 1.0 : 7924.453543 / GCC4.8.5 20150623 (Red Hat 4.8.5-39) -O2 -O3 -DMULTITHREAD=2 -DUSE_PTHREAD -lpthread -lrt -DPERFORMANCE_RUN=1  -lrt / Heap / 2:PThreads
+CoreMark 1.0 : 7914.523150 / GCC4.8.5 20150623 (Red Hat 4.8.5-39) -O2 -O3 -DMULTITHREAD=2 -DUSE_PTHREAD -lpthread -lrt -DPERFORMANCE_RUN=1  -lrt / Heap / 2:PThreads
+CoreMark 1.0 : 7916.089452 / GCC4.8.5 20150623 (Red Hat 4.8.5-39) -O2 -O3 -DMULTITHREAD=2 -DUSE_PTHREAD -lpthread -lrt -DPERFORMANCE_RUN=1  -lrt / Heap / 2:PThreads
+CoreMark 1.0 : 7918.701333 / GCC4.8.5 20150623 (Red Hat 4.8.5-39) -O2 -O3 -DMULTITHREAD=2 -DUSE_PTHREAD -lpthread -lrt -DPERFORMANCE_RUN=1  -lrt / Heap / 2:PThreads
+CoreMark 1.0 : 7937.557878 / GCC4.8.5 20150623 (Red Hat 4.8.5-39) -O2 -O3 -DMULTITHREAD=2 -DUSE_PTHREAD -lpthread -lrt -DPERFORMANCE_RUN=1  -lrt / Heap / 2:PThreads
+CoreMark 1.0 : 7929.690081 / GCC4.8.5 20150623 (Red Hat 4.8.5-39) -O2 -O3 -DMULTITHREAD=2 -DUSE_PTHREAD -lpthread -lrt -DPERFORMANCE_RUN=1  -lrt / Heap / 2:PThreads
+CoreMark 1.0 : 7908.785342 / GCC4.8.5 20150623 (Red Hat 4.8.5-39) -O2 -O3 -DMULTITHREAD=2 -DUSE_PTHREAD -lpthread -lrt -DPERFORMANCE_RUN=1  -lrt / Heap / 2:PThreads
+CoreMark 1.0 : 7930.214116 / GCC4.8.5 20150623 (Red Hat 4.8.5-39) -O2 -O3 -DMULTITHREAD=2 -DUSE_PTHREAD -lpthread -lrt -DPERFORMANCE_RUN=1  -lrt / Heap / 2:PThreads
