@@ -17,6 +17,9 @@ To add your results to this repository please edit this table:
 | Dhrystone (registers) | Serenity 16: COM Express with CentOS 7 (GCC v6.2.1)      |                                 | 10     | [Run details](RunningBenchmarks.md#dhrystone-21) |
 | Dhrystone (no regs)   | Serenity 16: COM Express with CentOS 7 (GCC v6.2.1)      |                                 | 10     | [Run details](RunningBenchmarks.md#dhrystone-21) |
 | Whetstone             | Serenity 16: COM Express with CentOS 7 (GCC v6.2.1)      |                                 | 10     | [Run details](RunningBenchmarks.md#whetstone)|
-
-
+|-----------------------|----------------------------------------------------------|---------------------------------|--------|---------------------|
+| CoreMark              | Apollo 5: Zynq processor (GCC v4.8.5)                    | 3711.91 (9.49) iterations/s     | 10     | [Run details](RunningBenchmarks.md#coremark) |
+| Dhrystone (registers) | Apollo 5: Zynq processor (GCC v4.8.5)                    | 2387029 (32388) Dhrystones/s    | 10     | [Run details](RunningBenchmarks.md#dhrystone-21) |
+| Dhrystone (no regs)   | Apollo 5: Zynq processor (GCC v4.8.5)                    | 230952.5 (0) Dhrystones/s       | 10     | [Run details](RunningBenchmarks.md#dhrystone-21) |
+| Whetstone             | Apollo 5: Zynq processor (GCC v4.8.5)                    | 4928.57 (115) Whetstones/s      | 10     | [Run details](RunningBenchmarks.md#whetstone)|
 
