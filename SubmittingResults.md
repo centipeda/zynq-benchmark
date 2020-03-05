@@ -32,6 +32,10 @@ Some quick inferences that can be drawn from these results:
 | Dhrystone (registers) | Apollo 5 (GCC v4.8.5)                    | 2387029 (32388) Dhrystones/s    | 10     | [Run details](RunningBenchmarks.md#dhrystone-21) |
 | Dhrystone (no regs)   | Apollo 5 (GCC v4.8.5)                    | 230952.5 (0) Dhrystones/s       | 10     | [Run details](RunningBenchmarks.md#dhrystone-21) |
 | Whetstone             | Apollo 5 (GCC v4.8.5)                    | 4928.57 (115) Whetstones/s      | 10     | [Run details](RunningBenchmarks.md#whetstone)|
-
+|-----------------------|--------------------------|-------------------------------|----|-------------|
+| CoreMark              | Serenity 13 (GCC v4.8.5) | 7852.72 (47.00) iterations/s  | 10 | [Run details](RunningBenchmarks.md#coremark) |
+| Dhrystone (registers) | Serenity 13 (GCC v4.8.5) | 5620915 (137789) Dhrystones/s | 10 | [Run details](RunningBenchmarks.md#coremark) |
+| Dhrystone (no regs)   | Serenity 13 (GCC v4.8.5) | 5588235 (103342) Dhrystones/s | 10 | [Run details](RunningBenchmarks.md#coremark) |
+| Whetstone             | Serenity 13 (GCC v4.8.5) | 12678 (564) Whetstones/s      | 10 | [Run details](RunningBenchmarks.md#coremark) |
 
 
