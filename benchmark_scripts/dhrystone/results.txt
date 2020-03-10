@@ -1,19 +1,19 @@
 gcc_dry2:
 Dhrystones per Second:                      5555555.5
 Dhrystones per Second:                      5555555.5
-Dhrystones per Second:                      5555555.5
 Dhrystones per Second:                      5882353.0
 Dhrystones per Second:                      5555555.5
 Dhrystones per Second:                      5555555.5
 Dhrystones per Second:                      5555555.5
 Dhrystones per Second:                      5555555.5
-Dhrystones per Second:                      5882353.0
 Dhrystones per Second:                      5555555.5
+Dhrystones per Second:                      5555555.5
+Dhrystones per Second:                      5882353.0
 
 gcc_dry2reg:
-Dhrystones per Second:                      5555555.5
-Dhrystones per Second:                      5555555.5
 Dhrystones per Second:                      5882353.0
+Dhrystones per Second:                      5555555.5
+Dhrystones per Second:                      5555555.5
 Dhrystones per Second:                      5555555.5
 Dhrystones per Second:                      5555555.5
 Dhrystones per Second:                      5555555.5
