@@ -29,12 +29,12 @@ function isinstalled {
 }
 
 # Install and enable appropriate devtoolset (Tom said to choose one, so I chose 6)
-if ! isinstalled devtoolset-6; then  # FIXME will this work for  
-  yum -y install devtoolset-6;
+if ! isinstalled devtoolset-6; then
+  yum -y install devtoolset-6;  # This takes a while...
   echo "Enabling a devtoolset requires interrupting this program. Please run this file again."
   scl enable devtoolset-6 bash
   exit
-fi  # This takes a while...
+fi
 gcc --version  # should be 6.3.1
 
 # Get git setup set up
@@ -63,7 +63,8 @@ if [ $ARCH != "arm" ]; then
   sed -i 's/-march=armv7-a -mcpu=cortex-a9 -mfpu=neon-fp16 -march=armv7-a //' run_coremark.sh 
 fi
 
-run_coremark.sh
+# Run coremark
+sh run_coremark.sh
 
 # Process results.txt
 if [ $PROCESS_RESULTS != "0" ]; then
@@ -80,17 +81,19 @@ curl https://fossies.org/linux/privat/old/dhrystone-2.1.tar.gz > dhrystone-2.1.t
 tar xzf dhrystone-2.1.tar.gz
 
 # Make edits to the Makefile
-sed -i 's/#TIME_FUNC=     -DTIME/TIME_FUNC=     -DTIME/'  # uncomment this line...
-sed -i 's/TIME_FUNC=     -DTIMES/#TIME_FUNC=     -DTIMES/'  # ...comment out this line.
+sed -i 's/#TIME_FUNC=     -DTIME/TIME_FUNC=     -DTIME/' Makefile  # uncomment this line...
+sed -i 's/TIME_FUNC=     -DTIMES/#TIME_FUNC=     -DTIMES/' Makefile  # ...comment out this line.
 # add compiler flags
 if [ $ARCH == "arm" ]; then
-  sed -i 's/GCCOPTIM=       -O/GCCOPTIM=       -O3 -Ofast --mcpu=cortex-a9 -mfpu=vfpv3-fp16/'
+  sed -i 's/GCCOPTIM=       -O/GCCOPTIM=       -O -O3 -Ofast --mcpu=cortex-a9 -mfpu=vfpv3-fp16/' Makefile
 else
-  sed -i 's/GCCOPTIM=       -O/GCCOPTIM=       -O3 -Ofast/'
+  sed -i 's/GCCOPTIM=       -O/GCCOPTIM=       -O -O3 -Ofast/' Makefile
 fi
 
+# Make and then run dhrystone
+make
 mv ../benchmark_scripts/dhrystone/run_dhrystone.sh run_dhrystone.sh
-run_dhrystone.sh
+sh run_dhrystone.sh
 
 # Process results.txt
 if [ $PROCESS_RESULTS != "0" ]; then
@@ -105,8 +108,14 @@ mkdir whetstone
 cd whetstone
 curl https://www.netlib.org/benchmark/whetstone.c > whetstone.c
 
+# Make and then run whetstone
+if [ $ARCH == "arm" ]; then
+  gcc whetstone.c -O3 -Ofast --mcpu=cortex-a9 -mfpu=vfpv3-fp16 –DNDEBUG -lm -o whetstone
+else
+  gcc whetstone.c -O3 -Ofast -lm -o whetstone
+fi
 mv ../benchmark_scripts/whetstone/run_whetstone.sh run_whetstone.sh
-run_whetstone.sh
+sh run_whetstone.sh
 
 # Process results.txt
 if [ $PROCESS_RESULTS != "0" ]; then
@@ -117,5 +126,6 @@ fi
 cd ..
 
 
+echo ""
 echo "Benchmarking process complete! Find the results inside of results.txt and results_summary.txt in each folder."
 echo "Exiting program."
