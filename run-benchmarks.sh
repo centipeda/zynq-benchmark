@@ -29,9 +29,9 @@ function isinstalled {
 }
 
 # Install and enable appropriate devtoolset (Tom said to choose one, so I chose 6)
-if ! isinstalled devtoolset-6; then
+if ! isinstalled devtoolset-6; then  # FIXME will this work for  
   yum -y install devtoolset-6;
-  echo "Enabling a devtoolset requires beginning a new shell session. Please run this file again."
+  echo "Enabling a devtoolset requires interrupting this program. Please run this file again."
   scl enable devtoolset-6 bash
   exit
 fi  # This takes a while...
@@ -55,8 +55,8 @@ cd benchmarks
 
 ## COREMARK
 git clone https://github.com/eembc/coremark
-mv benchmark_scripts/coremark/run_coremark.sh run_coremark.sh
 cd coremark
+mv ../benchmark_scripts/coremark/run_coremark.sh run_coremark.sh
 
 # if non-arm architecture, remove arm compiler flags from run file
 if [ $ARCH != "arm" ]; then
@@ -67,7 +67,7 @@ run_coremark.sh
 
 # Process results.txt
 if [ $PROCESS_RESULTS != "0" ]; then
-  mv benchmark_scripts/coremark/process_coremark.py process_coremark.py
+  mv ../benchmark_scripts/coremark/process_coremark.py process_coremark.py
   python3 process_coremark.py >> results_summary.txt
 fi
 
@@ -89,12 +89,12 @@ else
   sed -i 's/GCCOPTIM=       -O/GCCOPTIM=       -O3 -Ofast/'
 fi
 
-mv benchmark_scripts/dhrystone/run_dhrystone.sh run_dhrystone.sh
+mv ../benchmark_scripts/dhrystone/run_dhrystone.sh run_dhrystone.sh
 run_dhrystone.sh
 
 # Process results.txt
 if [ $PROCESS_RESULTS != "0" ]; then
-  mv benchmark_scripts/dhrystone/process_dhrystone.py process_dhrystone.py
+  mv ../benchmark_scripts/dhrystone/process_dhrystone.py process_dhrystone.py
   python3 process_dhrystone.py >> results_summary.txt
 fi
 
@@ -105,17 +105,17 @@ mkdir whetstone
 cd whetstone
 curl https://www.netlib.org/benchmark/whetstone.c > whetstone.c
 
-mv benchmark_scripts/whetstone/run_whetstone.sh run_whetstone.sh
+mv ../benchmark_scripts/whetstone/run_whetstone.sh run_whetstone.sh
 run_whetstone.sh
 
 # Process results.txt
 if [ $PROCESS_RESULTS != "0" ]; then
-  mv benchmark_scripts/whetstone/process_whetstone.py process_whetstone.py
+  mv ../benchmark_scripts/whetstone/process_whetstone.py process_whetstone.py
   python3 process_whetstone.py >> results_summary.txt
 fi
 
 cd ..
 
 
-echo "\n\nBenchmarking process complete! Find the results inside of results.txt and results_summary.txt in each folder."
+echo "Benchmarking process complete! Find the results inside of results.txt and results_summary.txt in each folder."
 echo "Exiting program."
