@@ -19,25 +19,38 @@ PROCESS_RESULTS="1"  # If you want to install python3 and process results, "1", 
 
 ### SETUP
 
-# Get git setup set up
-yum -y install git  # -y means answer yes to confirmations
-git clone https://github.com/centipeda/zynq-benchmark.git
+# Grabbed from https://unix.stackexchange.com/questions/122681/how-can-i-tell-whether-a-package-is-installed-via-yum-in-a-bash-script
+function isinstalled {
+  if yum list installed "$@" >/dev/null 2>&1; then
+    true
+  else
+    false
+  fi
+}
 
 # Install and enable appropriate devtoolset (Tom said to choose one, so I chose 6)
-yum -y install devtoolset-6  # This takes a while...
-scl enable devtoolset-6 bash
+if ! isinstalled devtoolset-6; then
+  yum -y install devtoolset-6;
+  echo "Enabling a devtoolset requires beginning a new shell session. Please run this file again."
+  scl enable devtoolset-6 bash
+  exit
+fi  # This takes a while...
 gcc --version  # should be 6.3.1
+
+# Get git setup set up
+if ! isinstalled git; then { yum -y install git; } fi  # -y means answer yes to confirmations
+git clone https://github.com/centipeda/zynq-benchmark.git
 
 # Install Python 3 if you will also be processing the benchmarking the reuslts on the system (this is easier)
 if [ $PROCESS_RESULTS != "0" ]; then
-  yum -y install python3
+  if ! isinstalled python3; then { yum -y install python3; } fi  # -y means answer yes to confirmations
 fi
 
 
 ### BENCHMARKING
 
 mkdir benchmarks
-cp zynq-benchmark/benchmark_scripts benchmarks  # copy relevant repo dir into benchmarking dir
+cp -r zynq-benchmark/benchmark_scripts benchmarks  # copy relevant repo dir into benchmarking dir
 cd benchmarks
 
 ## COREMARK
@@ -49,6 +62,7 @@ cd coremark
 if [ $ARCH != "arm" ]; then
   sed -i 's/-march=armv7-a -mcpu=cortex-a9 -mfpu=neon-fp16 -march=armv7-a //' run_coremark.sh 
 fi
+
 run_coremark.sh
 
 # Process results.txt
@@ -102,3 +116,6 @@ fi
 
 cd ..
 
+
+echo "\n\nBenchmarking process complete! Find the results inside of results.txt and results_summary.txt in each folder."
+echo "Exiting program."
