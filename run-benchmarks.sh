@@ -19,7 +19,7 @@
 
 ARCH="x86"  # if ARCH isn't "arm", alter some of the compilation flags in the repo
 # GCC=6  # might add in GCC option later
-PROCESS_RESULTS="1"  # If you want to install python3 and process results, "1", else, "0"
+PROCESS_RESULTS="1"  # If you want to install python3 and perform statistical analysis on benchmarking results, "1"; else, "0"
 
 
 ### SETUP
@@ -34,6 +34,7 @@ function isinstalled {
 }
 
 # Install and enable appropriate devtoolset (Tom said to choose one, so I chose 6)
+printf "\nInstalling appropriate devtoolset if not installed.\n"
 if ! isinstalled devtoolset-6; then
   yum -y install devtoolset-6;  # This takes a while...
   echo "Enabling a devtoolset requires interrupting this program. Please run this file again."
@@ -45,10 +46,12 @@ printf "\nYour gcc version is:"
 gcc --version  # should be 6.3.1
 
 # Get git setup set up
+printf "\nInstalling git if not installed.\n"
 if ! isinstalled git; then { yum -y install git; } fi  # -y means answer yes to confirmations
 git clone https://github.com/centipeda/zynq-benchmark.git
 
 # Install Python 3 if you will also be processing the benchmarking the reuslts on the system (this is easier)
+printf "\nInstalling python3 if not installed.\n"
 if [ $PROCESS_RESULTS != "0" ]; then
   if ! isinstalled python3; then { yum -y install python3; } fi  # -y means answer yes to confirmations
 fi
@@ -61,6 +64,8 @@ cp -r zynq-benchmark/benchmark_scripts benchmarks  # copy relevant repo dir into
 cd benchmarks
 
 ## COREMARK
+printf "\nRunning Coremark benchmarks.\n"
+rm -rf coremark  # if there is a directory here already, we want it gone.
 git clone https://github.com/eembc/coremark
 cd coremark
 mv ../benchmark_scripts/coremark/run_coremark.sh run_coremark.sh
@@ -82,10 +87,20 @@ fi
 cd ..
 
 ## DHRYSTONE
+printf "\nRunning Dhrystone benchmarks.\n"
+rm -rf dhrystone  # if there is a directory here already, we want it gone.
 mkdir dhrystone
 cd dhrystone
 curl https://fossies.org/linux/privat/old/dhrystone-2.1.tar.gz > dhrystone-2.1.tar.gz
 tar xzf dhrystone-2.1.tar.gz
+
+# Edit dhry_1.c (https://stackoverflow.com/questions/9948508/errors-while-compiling-dhrystone-in-unix)
+# Comment out a few lines to prevent conflicting function definitions...
+sed -i 's/extern char     \*malloc ();/\/\/ extern char     \*malloc ();/' dhry_1.c
+sed -i 's/extern  int     times ();/\/\/ extern  int     times ();/' dhry_1.c
+# ...and add back in some stdlib function definitions
+sed -i '1i #include <stdio.h>' dhry.h
+sed -i '1i #include <string.h>' dhry.h
 
 # Edit Makefile
 sed -i 's/#TIME_FUNC=     -DTIME/TIME_FUNC=     -DTIME/' Makefile  # uncomment this line...
@@ -100,14 +115,6 @@ fi
 # Make
 make
 
-# Edit dhry_1.c (https://stackoverflow.com/questions/9948508/errors-while-compiling-dhrystone-in-unix)
-# Comment out a few lines to prevent conflicting function definitions...
-sed -i 's/extern char     *malloc ();/\/\/ extern char     *malloc ();/' dhry_1.c
-sed -i 's/extern  int     times ();/\/\/ extern  int     times ();/' dhry_1.c
-# ...and add back in some stdlib function definitions
-sed -i '1i #include <stdio.h>' dhry.h
-sed -i '1i #include <string.h>' dhry.h
-
 # Finally, FINALLY run dhrystone
 mv ../benchmark_scripts/dhrystone/run_dhrystone.sh run_dhrystone.sh
 sh run_dhrystone.sh
@@ -121,6 +128,8 @@ fi
 cd ..
 
 ## WHETSTONE
+printf "\nRunning Whetstone benchmarks.\n"
+rm -rf whetstone  # if there is a directory here already, we want it gone.
 mkdir whetstone
 cd whetstone
 curl https://www.netlib.org/benchmark/whetstone.c > whetstone.c
@@ -143,6 +152,5 @@ fi
 cd ..
 
 
-echo ""
-echo "Benchmarking process complete! Find the results inside of results.txt and results_summary.txt in each folder."
-echo "Exiting program."
+printf "\nBenchmarking process complete! Find the results inside of results.txt and results_summary.txt in each folder."
+printf "Exiting program.\n\n"
