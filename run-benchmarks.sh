@@ -10,6 +10,11 @@
 # This assumes that you have root access on this machine.
 
 
+### THINGS THAT NEED WORK:
+# - Generalization to non-x86 architectures and testing on them
+# - Generalize script to support other versions of gcc (and testing!)
+
+
 ### CONSTANTS
 
 ARCH="x86"  # if ARCH isn't "arm", alter some of the compilation flags in the repo
@@ -35,6 +40,8 @@ if ! isinstalled devtoolset-6; then
   scl enable devtoolset-6 bash
   exit
 fi
+
+printf "\nYour gcc version is:"
 gcc --version  # should be 6.3.1
 
 # Get git setup set up
@@ -80,7 +87,7 @@ cd dhrystone
 curl https://fossies.org/linux/privat/old/dhrystone-2.1.tar.gz > dhrystone-2.1.tar.gz
 tar xzf dhrystone-2.1.tar.gz
 
-# Make edits to the Makefile
+# Edit Makefile
 sed -i 's/#TIME_FUNC=     -DTIME/TIME_FUNC=     -DTIME/' Makefile  # uncomment this line...
 sed -i 's/TIME_FUNC=     -DTIMES/#TIME_FUNC=     -DTIMES/' Makefile  # ...comment out this line.
 # add compiler flags
@@ -90,8 +97,18 @@ else
   sed -i 's/GCCOPTIM=       -O/GCCOPTIM=       -O -O3 -Ofast/' Makefile
 fi
 
-# Make and then run dhrystone
+# Make
 make
+
+# Edit dhry_1.c (https://stackoverflow.com/questions/9948508/errors-while-compiling-dhrystone-in-unix)
+# Comment out a few lines to prevent conflicting function definitions...
+sed -i 's/extern char     *malloc ();/\/\/ extern char     *malloc ();/' dhry_1.c
+sed -i 's/extern  int     times ();/\/\/ extern  int     times ();/' dhry_1.c
+# ...and add back in some stdlib function definitions
+sed -i '1i #include <stdio.h>' dhry.h
+sed -i '1i #include <string.h>' dhry.h
+
+# Finally, FINALLY run dhrystone
 mv ../benchmark_scripts/dhrystone/run_dhrystone.sh run_dhrystone.sh
 sh run_dhrystone.sh
 
