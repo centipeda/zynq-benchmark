@@ -18,7 +18,7 @@
 ### CONSTANTS
 
 ARCH="x86"  # if ARCH isn't "arm", alter some of the compilation flags in the repo
-# GCC=6  # might add in GCC option later
+GCC_V=6  # The version of gcc you intend to use
 PROCESS_RESULTS="1"  # If you want to install python3 and perform statistical analysis on benchmarking results, "1"; else, "0"
 
 
@@ -33,29 +33,45 @@ function isinstalled {
   fi
 }
 
-# Install and enable appropriate devtoolset (Tom said to choose one, so I chose 6)
-printf "\nInstalling appropriate devtoolset if not installed.\n"
-if ! isinstalled devtoolset-6; then
-  yum -y install devtoolset-6;  # This takes a while...
-  echo "Enabling a devtoolset requires interrupting this program. Please run this file again."
-  scl enable devtoolset-6 bash
+# Install and enable appropriate gcc
+printf "\nActivating correct version of gcc if not already active...\n"
+VERSION_STRING="gcc (GCC) $GCC_V"
+
+if [[ "$(gcc --version)" != *$VERSION_STRING* ]]; then  # I know this is hacky, but it's the only way I could think to do it
+  printf "\nRequested version of gcc not active."
+  printf "Installing appropriate devtoolset if not installed..."
+  if ! isinstalled devtoolset-$GCC_V; then
+    printf "Not installed. Installing now."
+    yum -y install devtoolset-$GCC_V;  # This takes a while...
+  else
+    printf "Already installed."
+  fi
+
+  echo "Enabling devtoolset. This requires interrupting this program. Please run this file again."
+  scl enable devtoolset-$GCC_V bash
   exit
 fi
 
-printf "\nYour gcc version is:"
-gcc --version  # should be 6.3.1
-
 # Get git setup set up
-printf "\nInstalling git if not installed.\n"
-if ! isinstalled git; then { yum -y install git; } fi  # -y means answer yes to confirmations
+printf "\nInstalling git if not installed..."
+if ! isinstalled git; then
+  printf "Not installed. Installing now."
+  yum -y install git;  # -y means answer yes to confirmations
+else
+  printf "Already installed."
+fi
 git clone https://github.com/centipeda/zynq-benchmark.git
 
 # Install Python 3 if you will also be processing the benchmarking the reuslts on the system (this is easier)
-printf "\nInstalling python3 if not installed.\n"
 if [ $PROCESS_RESULTS != "0" ]; then
-  if ! isinstalled python3; then { yum -y install python3; } fi  # -y means answer yes to confirmations
+  printf "\nInstalling python3 if not installed...\n"
+  if ! isinstalled python3; then
+    printf "Not installed. Installing now."
+    yum -y install python3;
+  else
+    printf "Already installed."
+  fi
 fi
-
 
 ### BENCHMARKING
 
