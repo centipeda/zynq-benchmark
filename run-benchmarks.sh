@@ -109,7 +109,8 @@ function check_pkgs {
 ### BENCHMARKING
 function setup {
   mkdir benchmarks
-  cp -r zynq-benchmark/benchmark_scripts benchmarks  # copy relevant repo dir into benchmarking dir
+  cp -r zynq-benchmark/benchmark_scripts benchmarks  # copy running dir into benchmarks
+  cp -r zynq-benchmark/benchmark_src benchmarks  # copy benchmarks src dir into benchmarks 
   cd benchmarks
 }
 
@@ -142,18 +143,8 @@ function run_dhrystone {
   ## DHRYSTONE
   printf "\nRunning Dhrystone benchmarks.\n"
   rm -rf dhrystone  # if there is a directory here already, we want it gone.
-  mkdir dhrystone
+  mv ../benchmark_src/dhrystone/ .  # get predownloaded dhrystone source
   cd dhrystone
-  curl https://fossies.org/linux/privat/old/dhrystone-2.1.tar.gz > dhrystone-2.1.tar.gz
-  tar xzf dhrystone-2.1.tar.gz
-
-  # Edit dhry_1.c (https://stackoverflow.com/questions/9948508/errors-while-compiling-dhrystone-in-unix)
-  # Comment out a few lines to prevent conflicting function definitions...
-  sed -i 's/extern char     \*malloc ();/\/\/ extern char     \*malloc ();/' dhry_1.c
-  sed -i 's/extern  int     times ();/\/\/ extern  int     times ();/' dhry_1.c
-  # ...and add back in some stdlib function definitions
-  sed -i '1i #include <stdio.h>' dhry.h
-  sed -i '1i #include <string.h>' dhry.h
 
   # Edit Makefile
   sed -i 's/#TIME_FUNC=     -DTIME/TIME_FUNC=     -DTIME/' Makefile  # uncomment this line...
@@ -165,10 +156,8 @@ function run_dhrystone {
     sed -i 's/GCCOPTIM=       -O/GCCOPTIM=       -O -O3 -Ofast/' Makefile
   fi
 
-  # Make
+  # Make and run
   make
-
-  # Finally, FINALLY run dhrystone
   mv ../benchmark_scripts/dhrystone/run_dhrystone.sh run_dhrystone.sh
   sh run_dhrystone.sh
 
@@ -185,9 +174,8 @@ function run_whetstone {
   ## WHETSTONE
   printf "\nRunning Whetstone benchmarks.\n"
   rm -rf whetstone  # if there is a directory here already, we want it gone.
-  mkdir whetstone
+  mv ../benchmark_src/whetstone/ .  # get predownloaded whetstone source
   cd whetstone
-  curl https://www.netlib.org/benchmark/whetstone.c > whetstone.c
 
   # Make and then run whetstone
   if [ $ARCH == "arm" ]; then

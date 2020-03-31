@@ -344,6 +344,10 @@
  ***************************************************************************
  */
 
+//THIS FILE HAS BEEN ALTERED BY THIS PROCEDURE: https://stackoverflow.com/a/9948577
+#include <stdio.h>
+#include <string.h>
+
 /* Compiler and system dependent definitions: */
 
 #ifndef TIME
