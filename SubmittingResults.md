@@ -24,13 +24,13 @@ Some quick inferences that can be drawn from these results:
 | Whetstone             | Enclustra Mars PM3 with Mars ZX2 (Zynq Z-7010 processor) | 1462.08 Whetstones/s            | 10     | [Run details](RunningBenchmarks.md#whetstone)|
 |                       |                          |                               |    |                                              | 
 | CoreMark              | Serenity 13 (GCC v4.8.5) | 7852.72 (47.00) iterations/s  | 10 | [Run details](RunningBenchmarks.md#coremark) |
-| Dhrystone (registers) | Serenity 13 (GCC v4.8.5) | 5620915 (137789) Dhrystones/s | 10 | [Run details](RunningBenchmarks.md#dhrystone-21) |
-| Dhrystone (no regs)   | Serenity 13 (GCC v4.8.5) | 5588235 (103342) Dhrystones/s | 10 | [Run details](RunningBenchmarks.md#dhrystone-21) |
+| Dhrystone (registers) | Serenity 13 (GCC v4.8.5) | 3358813 (19554) Dhrystones/s  | 10 | [Run details](RunningBenchmarks.md#dhrystone-21) |
+| Dhrystone (no regs)   | Serenity 13 (GCC v4.8.5) | 3363442 (3820.3) Dhrystones/s | 10 | [Run details](RunningBenchmarks.md#dhrystone-21) |
 | Whetstone             | Serenity 13 (GCC v4.8.5) | 12678 (564) Whetstones/s      | 10 | [Run details](RunningBenchmarks.md#whetstone) |
 |                       |                          |                               |    |                                              | 
 | CoreMark              | Serenity 13 (GCC v6.3.1) | 9518.58 (115.77) iterations/s | 10 | [Run details](RunningBenchmarks.md#coremark) |
-| Dhrystone (registers) | Serenity 13 (GCC v6.3.1) | 5620915 (137789) Dhrystones/s | 10 | [Run details](RunningBenchmarks.md#dhrystone-21) |
-| Dhrystone (no regs)   | Serenity 13 (GCC v6.3.1) | 5588235 (103342) Dhrystones/s | 10 | [Run details](RunningBenchmarks.md#dhrystone-21) |
+| Dhrystone (registers) | Serenity 13 (GCC v6.3.1) | 3336698 (10195) Dhrystones/s | 10 | [Run details](RunningBenchmarks.md#dhrystone-21) |
+| Dhrystone (no regs)   | Serenity 13 (GCC v6.3.1) | 3348883 (13221) Dhrystones/s | 10 | [Run details](RunningBenchmarks.md#dhrystone-21) |
 | Whetstone             | Serenity 13 (GCC v6.3.1) | 18000 (1721) Whetstones/s     | 10 | [Run details](RunningBenchmarks.md#whetstone) |
 |                       |                          |                               |    |                                              | 
 | CoreMark              | Serenity 13 (GCC v6.3.1) - CC7-base |  iterations/s  | 10 | [Run details](RunningBenchmarks.md#coremark) |
@@ -44,8 +44,8 @@ Some quick inferences that can be drawn from these results:
 | Whetstone             | Serenity 13 (GCC v6.3.1) - Shepherd-dev |  Whetstones/s   | 10 | [Run details](RunningBenchmarks.md#whetstone)|
 |                       |                          |                               |    |                                              | 
 | CoreMark              | Serenity 13 (GCC v8.3.1) | 9373.28 (69.61) iterations/s  | 10 | [Run details](RunningBenchmarks.md#coremark) |
-| Dhrystone (registers) | Serenity 13 (GCC v8.3.1) | 5653594 (157858) Dhrystones/s | 10 | [Run details](RunningBenchmarks.md#dhrystone-21) |
-| Dhrystone (no regs)   | Serenity 13 (GCC v8.3.1) | 5653594 (157858) Dhrystones/s | 10 | [Run details](RunningBenchmarks.md#dhrystone-21) |
+| Dhrystone (registers) | Serenity 13 (GCC v8.3.1) | 3404550 (1937) Dhrystones/s   | 10 | [Run details](RunningBenchmarks.md#dhrystone-21) |
+| Dhrystone (no regs)   | Serenity 13 (GCC v8.3.1) | 3395433 (1932) Dhrystones/s   | 10 | [Run details](RunningBenchmarks.md#dhrystone-21) |
 | Whetstone             | Serenity 13 (GCC v8.3.1) | 21500 (2415) Whetstones/s     | 10 | [Run details](RunningBenchmarks.md#whetstone) |
 |                       |                          |                               |    |                                              | 
 | CoreMark              | Serenity 16 (GCC v4.8.5) | 7909.05 (42.45) iterations/s  | 10 | [Run details](RunningBenchmarks.md#coremark) |
