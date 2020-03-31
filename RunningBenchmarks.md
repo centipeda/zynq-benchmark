@@ -1,17 +1,17 @@
 # Running Benchmarks
 
+_Note that all of this is automated by [run-benchmarks.sh](./run-benchmarks.sh). However, the instructions are still kept here for refernece._
+
 ## Requirements
 1. Device is connected to the internet
 2. git, make
-3. gcc v6.2.1 \
-   Check the correct version is installed using:
-   ```
-   $ gcc -v
-   ```
+3. gcc
 
 ## Compiler flags
 Since these benchmarks all involve the compiler, the nature of the compiler flags used can affect the benchmarking results to a great extent (Dhrystone and Whestone moreso than CoreMark.) As such, using the same compiler flags between runs and devices is important for getting comparable results. So as to enable comparison with [other benchmarks by Xilinx](https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/18842551/Zc702+Benchmark), unless specified otherwise run the benchmarks with the following flags:
-* `gcc` compiler flags: `-O3 -Ofast --mcpu=cortex-a9 -mfpu=vfpv3-fp16 –DNDEBUG`, 
+`gcc` compiler flags, ARM: `-O3 -Ofast --mcpu=cortex-a9 -mfpu=vfpv3-fp16 –DNDEBUG`
+`gcc` compiler flags, x86: `-O3 -Ofast –DNDEBUG`
+
 
 ## CoreMark
 
@@ -37,8 +37,10 @@ Instructions adapted from: https://wiki.cdot.senecacollege.ca/wiki/Dhrystone_how
     * Comment out the line with `TIME_FUNC=  -DTIMES`
     * Uncomment the line with `TIME_FUNC=  -DTIME`
     * Add the necessary compiler flags after `GCCOPTIM=` (listed above, in our case)
-3. Compile the benchmark with `make`.
-4. Run the benchmark by running either `gcc_dry2` or `gcc_dry2reg`. The former program will not use registers, while the latter will.
+3. Follow the procedure given [here](https://stackoverflow.com/a/9948577).
+    * In a sentence, comment out definitions of time() and malloc() in some of the dhrystone files and replace them with the system's.
+4. Compile the benchmark with `make`.
+5. Run the benchmark by running either `gcc_dry2` or `gcc_dry2reg`. The former program will not use registers, while the latter will.
 
 These results were obtained with the scripts in [benchmark_scripts/dhrystone](./benchmark_scripts/dhrystone). \
 10-run sample results, gcc_dry2reg:

@@ -24,7 +24,7 @@ DRY_RUN=0
 
 function usage {
 cat <<EOF
-Usage: $(basename $0) [GCC VERSION]
+Usage: (sudo) $(basename $0) [GCC VERSION]
 
 Runs benchmarks from https://github.com/centipeda/zynq-benchmark.git.
 Follows the procedure specified in https://github.com/centipeda/zynq-benchmark/blob/master/RunningBenchmarks.md.
