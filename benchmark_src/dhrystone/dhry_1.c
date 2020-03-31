@@ -14,6 +14,7 @@
  *
  ****************************************************************************
  */
+//THIS FILE HAS BEEN ALTERED BY THIS PROCEDURE: https://stackoverflow.com/a/9948577
 
 #include "dhry.h"
 
@@ -28,7 +29,7 @@ char            Ch_1_Glob,
 int             Arr_1_Glob [50];
 int             Arr_2_Glob [50] [50];
 
-extern char     *malloc ();
+//extern char     *malloc ();
 Enumeration     Func_1 ();
   /* forward declaration necessary since Enumeration may not simply be int */
 
@@ -45,7 +46,7 @@ Enumeration     Func_1 ();
 
 #ifdef TIMES
 struct tms      time_info;
-extern  int     times ();
+//extern  int     times ();
                 /* see library function "times" */
 #define Too_Small_Time (2*HZ)
                 /* Measurements should last at least about 2 seconds */

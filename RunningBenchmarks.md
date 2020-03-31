@@ -39,6 +39,7 @@ Instructions adapted from: https://wiki.cdot.senecacollege.ca/wiki/Dhrystone_how
     * Add the necessary compiler flags after `GCCOPTIM=` (listed above, in our case)
 3. Follow the procedure given [here](https://stackoverflow.com/a/9948577).
     * In a sentence, comment out definitions of time() and malloc() in some of the dhrystone files and replace them with the system's.
+    * This procedure is already implemented in [benchmark_src/dhrystone](./benchmark_src/dhrystone).
 4. Compile the benchmark with `make`.
 5. Run the benchmark by running either `gcc_dry2` or `gcc_dry2reg`. The former program will not use registers, while the latter will.
 
