@@ -233,13 +233,13 @@ function main {
     shift
   done
 
-  # check_pkgs
-  # setup
-  # run_coremark
-  # run_dhrystone
-  # run_whetstone
-  # printf "\nBenchmarking process complete! Find the results inside of results.txt and results_summary.txt in each folder."
-  # printf "Exiting program.\n\n"
+  check_pkgs
+  setup
+  run_coremark
+  run_dhrystone
+  run_whetstone
+  printf "\nBenchmarking process complete! Find the results inside of results.txt and results_summary.txt in each folder."
+  printf "Exiting program.\n\n"
 }
 
 main $@
