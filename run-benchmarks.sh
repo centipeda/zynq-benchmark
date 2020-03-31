@@ -17,14 +17,14 @@
 
 ### CONSTANTS
 
-ARCH="x86"  # if ARCH isn't "arm", alter some of the compilation flags in the repo
+ARCH=$(arch)  # get this machine's architecture
 GCC_V=6  # The version of gcc you intend to use
 PROCESS_RESULTS=0  # If you want to install python3 and perform statistical analysis on benchmarking results
 DRY_RUN=0
 
 function usage {
 cat <<EOF
-Usage: $(basename $0) [MACHINE_NAME]
+Usage: $(basename $0) [GCC VERSION]
 
 Runs benchmarks from https://github.com/centipeda/zynq-benchmark.git.
 Follows the procedure specified in https://github.com/centipeda/zynq-benchmark/blob/master/RunningBenchmarks.md.
@@ -38,11 +38,11 @@ This assumes that you have root access on this machine.
 Arguments:
 -h, --help                 Display this message.
 
--a, --arch ARCHITECTURE    Set compiler arguments to those for ARCHITECTURE.
-                           Currently supported: "x86" and "arm".
+-g, --gcc                  Specify the version of devtoolset you want to use. The gcc within will
+                           be used at all places in the benchmarking process needed.
 
 -p, --process-results      Perform basic statistical analysis on benchmark scores
-                           (mean, std. deviation). Requires Python 3 to be installed.
+                           (mean, std. deviation).Python 3 will be installed if it isn't already.
 
 -d, --dry-run              Don't run benchmarks, just check if requisite packages are installed.
 EOF
@@ -65,6 +65,7 @@ function isinstalled {
 
 # Install and enable appropriate gcc
 function check_pkgs {
+
   printf "\nActivating correct version of gcc if not already active...\n"
   VERSION_STRING="gcc (GCC) $GCC_V"
 
@@ -216,9 +217,9 @@ function main {
       -h|--help)
         usage 0
         ;;
-      -a|--arch)
+      -g|--gcc)
         shift
-        ARCH="$1"
+        GCC="$1"
         ;;
       -p|--process-results)
         PROCESS_RESULTS=1
