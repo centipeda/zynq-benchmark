@@ -66,12 +66,12 @@ function isinstalled {
 # Install and enable appropriate gcc
 function check_pkgs {
 
-  printf "\nActivating correct version of gcc if not already active...\n"
+  echo "Activating correct version of gcc if not already active..."
   VERSION_STRING="gcc (GCC) $GCC_V"
 
   if [[ "$(gcc --version)" != *$VERSION_STRING* ]]; then  # I know this is hacky, but it's the only way I could think to do it
-    printf "\nRequested version of gcc not active."
-    printf "Installing appropriate devtoolset if not installed..."
+    echo "Requested version of gcc not active."
+    echo "Installing appropriate devtoolset if not installed..."
     if ! isinstalled devtoolset-$GCC_V; then
       printf "Not installed. Installing now."
       yum -y install devtoolset-$GCC_V;  # This takes a while...
@@ -85,23 +85,24 @@ function check_pkgs {
   fi
 
   # Get git setup set up
-  printf "\nInstalling git if not installed..."
+  echo
+  echo "Installing git if not installed..."
   if ! isinstalled git; then
-    printf "Not installed. Installing now."
+    echo "Not installed. Installing now."
     yum -y install git;  # -y means answer yes to confirmations
   else
-    printf "Already installed."
+    echo "Already installed."
   fi
   git clone https://github.com/centipeda/zynq-benchmark.git
 
   # Install Python 3 if you will also be processing the benchmarking the reuslts on the system (this is easier)
   if [ $PROCESS_RESULTS ]; then
-    printf "\nInstalling python3 if not installed...\n"
+    echo "Installing python3 if not installed..."
     if ! isinstalled python3; then
-      printf "Not installed. Installing now."
+      echo "Not installed. Installing now."
       yum -y install python3;
     else
-      printf "Already installed."
+      echo "Already installed."
     fi
   fi
 }
@@ -116,7 +117,7 @@ function setup {
 
 function run_coremark {
   ## COREMARK
-  printf "\nRunning Coremark benchmarks.\n"
+  echo "Running Coremark benchmarks."
   rm -rf coremark  # if there is a directory here already, we want it gone.
   git clone https://github.com/eembc/coremark
   cd coremark
@@ -141,7 +142,7 @@ function run_coremark {
 
 function run_dhrystone {
   ## DHRYSTONE
-  printf "\nRunning Dhrystone benchmarks.\n"
+  echo "Running Dhrystone benchmarks.\n"
   rm -rf dhrystone  # if there is a directory here already, we want it gone.
   mv ../benchmark_src/dhrystone/ .  # get predownloaded dhrystone source
   cd dhrystone
@@ -172,7 +173,7 @@ function run_dhrystone {
 
 function run_whetstone {
   ## WHETSTONE
-  printf "\nRunning Whetstone benchmarks.\n"
+  echo "Running Whetstone benchmarks."
   rm -rf whetstone  # if there is a directory here already, we want it gone.
   mv ../benchmark_src/whetstone/ .  # get predownloaded whetstone source
   cd whetstone
@@ -227,8 +228,10 @@ function main {
   run_coremark
   run_dhrystone
   run_whetstone
-  printf "\nBenchmarking process complete! Find the results inside of results.txt and results_summary.txt in each folder."
-  printf "Exiting program.\n\n"
+  echo
+  echo "Benchmarking process complete! Find the results inside of results.txt and results_summary.txt in each folder."
+  echo "Exiting program."
+  echo
 }
 
 main $@
