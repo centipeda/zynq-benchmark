@@ -67,7 +67,7 @@ function isinstalled {
 function check_pkgs {
 
   echo "Activating correct version of gcc if not already active..."
-  VERSION_STRING="gcc (GCC) $GCC_V"
+  VERSION_STRING=" $GCC_V"  #FIXME: "is there a string in the gcc version output that starts with this number" is NOT good coding. Sorry.
 
   if [[ "$(gcc --version)" != *$VERSION_STRING* ]]; then  # I know this is hacky, but it's the only way I could think to do it
     echo "Requested version of gcc not active."
@@ -142,9 +142,9 @@ function run_coremark {
 
 function run_dhrystone {
   ## DHRYSTONE
-  echo "Running Dhrystone benchmarks.\n"
+  echo "Running Dhrystone benchmarks."
   rm -rf dhrystone  # if there is a directory here already, we want it gone.
-  mv ../benchmark_src/dhrystone/ .  # get predownloaded dhrystone source
+  mv benchmark_src/dhrystone/ .  # get predownloaded dhrystone source
   cd dhrystone
 
   # Edit Makefile
@@ -175,7 +175,7 @@ function run_whetstone {
   ## WHETSTONE
   echo "Running Whetstone benchmarks."
   rm -rf whetstone  # if there is a directory here already, we want it gone.
-  mv ../benchmark_src/whetstone/ .  # get predownloaded whetstone source
+  mv benchmark_src/whetstone/ .  # get predownloaded whetstone source
   cd whetstone
 
   # Make and then run whetstone
@@ -228,6 +228,7 @@ function main {
   run_coremark
   run_dhrystone
   run_whetstone
+
   echo
   echo "Benchmarking process complete! Find the results inside of results.txt and results_summary.txt in each folder."
   echo "Exiting program."
