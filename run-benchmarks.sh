@@ -115,6 +115,17 @@ function setup {
   cd benchmarks
 }
 
+# Record CPU and memory usage
+function log_hw {
+  echo "1" >> benchmark_active.log
+  echo "%CPU %MEM $(date)" >> ps.log
+  while [ $(tail -n 1 benchmark_active.log) == "1" ]
+  do
+    ps -o pcpu= -o pmem= -C $1 >> ps.log
+    sleep 2
+  done
+}
+
 function run_coremark {
   ## COREMARK
   echo "Running Coremark benchmarks."
@@ -129,7 +140,9 @@ function run_coremark {
   fi
 
   # Run coremark
+  log_hw "coremark.exe" &
   sh run_coremark.sh
+  echo "0" >> benchmark_active.log
 
   # Process results.txt
   if [ $PROCESS_RESULTS != "0" ]; then
@@ -160,7 +173,9 @@ function run_dhrystone {
   # Make and run
   make
   mv ../benchmark_scripts/dhrystone/run_dhrystone.sh run_dhrystone.sh
+  log_hw "gcc_dry2reg" &
   sh run_dhrystone.sh
+  echo "0" >> benchmark_active.log
 
   # Process results.txt
   if [ $PROCESS_RESULTS != "0" ]; then
@@ -185,7 +200,9 @@ function run_whetstone {
     gcc whetstone.c -O3 -Ofast -lm -o whetstone
   fi
   mv ../benchmark_scripts/whetstone/run_whetstone.sh run_whetstone.sh
+  log_hw "whetstone" &
   sh run_whetstone.sh
+  echo "0" >> benchmark_active.log
 
   # Process results.txt
   if [ $PROCESS_RESULTS != "0" ]; then
@@ -230,7 +247,7 @@ function main {
   run_whetstone
 
   echo
-  echo "Benchmarking process complete! Find the results inside of results.txt and results_summary.txt in each folder."
+  echo "Benchmarking process complete! Find the results inside of results.txt and results_summary.txt in each folder. CPU and memory usage are in ps.log in each folder. Note that CPU usage is computed as the percentage of CPU time used over the lifetime of the process."
   echo "Exiting program."
   echo
 }
