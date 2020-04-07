@@ -117,11 +117,11 @@ function setup {
 
 # Record CPU and memory usage
 function log_hw {
-  echo "1" >> benchmark_active.log
-  echo "%CPU %MEM $(date)" >> ps.log
-  while [ $(tail -n 1 benchmark_active.log) == "1" ]
+  echo "1" >> benchmark_active.txt
+  echo "%CPU %MEM $(date)" >> ps.txt
+  while [ $(tail -n 1 benchmark_active.txt) == "1" ]
   do
-    ps -o pcpu= -o pmem= -C $1 >> ps.log
+    ps -o pcpu= -o pmem= -C $1 >> ps.txt
     sleep 2
   done
 }
@@ -142,7 +142,7 @@ function run_coremark {
   # Run coremark
   log_hw "coremark.exe" &
   sh run_coremark.sh
-  echo "0" >> benchmark_active.log
+  echo "0" >> benchmark_active.txt
 
   # Process results.txt
   if [ $PROCESS_RESULTS != "0" ]; then
@@ -175,7 +175,7 @@ function run_dhrystone {
   mv ../benchmark_scripts/dhrystone/run_dhrystone.sh run_dhrystone.sh
   log_hw "gcc_dry2reg" &
   sh run_dhrystone.sh
-  echo "0" >> benchmark_active.log
+  echo "0" >> benchmark_active.txt
 
   # Process results.txt
   if [ $PROCESS_RESULTS != "0" ]; then
@@ -202,7 +202,7 @@ function run_whetstone {
   mv ../benchmark_scripts/whetstone/run_whetstone.sh run_whetstone.sh
   log_hw "whetstone" &
   sh run_whetstone.sh
-  echo "0" >> benchmark_active.log
+  echo "0" >> benchmark_active.txt
 
   # Process results.txt
   if [ $PROCESS_RESULTS != "0" ]; then
