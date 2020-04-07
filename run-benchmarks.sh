@@ -118,10 +118,10 @@ function setup {
 # Record CPU and memory usage
 function log_hw {
   echo "1" >> benchmark_active.txt
-  echo "%CPU %MEM $(date)" >> ps.txt
+  #echo "%CPU %MEM $(date)" >> ps.txt
   while [ $(tail -n 1 benchmark_active.txt) == "1" ]
   do
-    ps -o pcpu= -o pmem= -C $1 >> ps.txt
+    ps -o pcpu= -o -C $1 >> ps.txt
     sleep 2
   done
 }
