@@ -1,6 +1,6 @@
 # Running Benchmarks
 
-_Note that all of this is automated by [run-benchmarks.sh](./run-benchmarks.sh). However, the instructions are still kept here for refernece._
+_Note that all of this is automated by [run-benchmarks.sh](./run-benchmarks.sh). However, the instructions are still kept here for reference._
 
 ## Requirements
 1. Device is connected to the internet
