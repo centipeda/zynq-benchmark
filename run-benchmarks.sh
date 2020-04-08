@@ -242,9 +242,12 @@ function main {
 
   check_pkgs
   setup
-  run_coremark
-  run_dhrystone
-  run_whetstone
+
+  if [ DRY_RUN -eq 0 ] ; then
+    run_coremark
+    run_dhrystone
+    run_whetstone
+  fi
 
   echo
   echo "Benchmarking process complete! Find the results inside of results.txt and results_summary.txt in each folder. CPU and memory usage are in ps.log in each folder. Note that CPU usage is computed as the percentage of CPU time used over the lifetime of the process."
