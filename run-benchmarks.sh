@@ -121,7 +121,7 @@ function log_hw {
   #echo "%CPU %MEM $(date)" >> ps.txt
   while [ $(tail -n 1 benchmark_active.txt) == "1" ]
   do
-    ps -o pcpu= -o -C $1 >> ps.txt
+    ps -o pcpu= -C $1 >> ps.txt
     sleep 2
   done
 }
@@ -135,7 +135,7 @@ function run_coremark {
   mv ../benchmark_scripts/coremark/run_coremark.sh run_coremark.sh
 
   # if non-arm architecture, remove arm compiler flags from run file
-  if [ $ARCH != "arm" ]; then
+  if [ $ARCH != arm* ]; then
     sed -i 's/-march=armv7-a -mcpu=cortex-a9 -mfpu=neon-fp16 -march=armv7-a //' run_coremark.sh 
   fi
 
@@ -195,7 +195,7 @@ function run_whetstone {
 
   # Make and then run whetstone
   if [ $ARCH == "arm" ]; then
-    gcc whetstone.c -O3 -Ofast --mcpu=cortex-a9 -mfpu=vfpv3-fp16 –DNDEBUG -lm -o whetstone
+    gcc whetstone.c -O3 -Ofast --mcpu=cortex-a9 -mfpu=vfpv3-fp16 -DNDEBUG -lm -o whetstone
   else
     gcc whetstone.c -O3 -Ofast -lm -o whetstone
   fi
