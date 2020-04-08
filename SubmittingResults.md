@@ -15,6 +15,7 @@ Some quick inferences that can be drawn from these results:
 - __Docker containers:__
   - CC7-base: https://hub.docker.com/r/cern/cc7-base/tags (tags: 20200201-1.x86_64)
   - Shepherd-dev: https://hub.docker.com/r/rknowlton/shepherd-dev/tags (tag: 0.2)
+- CPU Usage: sum of percent performance on all cores, (stdev), number of data taken.
 
 ## Benchmarking Results
 
@@ -58,16 +59,16 @@ Some quick inferences that can be drawn from these results:
 | Dhrystone (registers) | Serenity 16 (GCC v6.3.1) | 3347546 (17100) Dhrystones/s | 10 |  |
 | Dhrystone (no regs)   | Serenity 16 (GCC v6.3.1) | 3335305 (64222) Dhrystones/s | 10 |  |
 | Whetstone             | Serenity 16 (GCC v6.3.1) | 18333.4 (1756) Whetstones/s   | 10 | |
-|                       |                          |                               |    | | 
-| CoreMark              | Serenity 16 (GCC v6.3.1) - CC7-base | 8895.08 (956.9) iterations/s  | 10 |  |
-| Dhrystone (registers) | Serenity 16 (GCC v6.3.1) - CC7-base | 3324581  (20372) Dhrystones/s | 10 |  |
-| Dhrystone (no regs)   | Serenity 16 (GCC v6.3.1) - CC7-base | 3331561  (17212) Dhrystones/s | 10 |  |
-| Whetstone             | Serenity 16 (GCC v6.3.1) - CC7-base | 18000   (1721) Whetstones/s   | 10 | |
-|                       |                          |                               |    | | 
-| CoreMark              | Serenity 16 (GCC v6.3.1) - Shepherd-dev | 9044.26 (910.3) iterations/s  | 10 |  |
-| Dhrystone (registers) | Serenity 16 (GCC v6.3.1) - Shepherd-dev | 3331740 (16366)  Dhrystones/s | 10 |  |
+|                       |                          |                               |               | CPU Usage: | 
+| CoreMark              | Serenity 16 (GCC v6.3.1) - CC7-base | 8895.08 (956.9) iteration/s  | 10  | 148% (43%) 152 |
+| Dhrystone (registers) | Serenity 16 (GCC v6.3.1) - CC7-base | 3324581  (20372) Dhrystones/s | 10 | 98% (21%) 88 |
+| Dhrystone (no regs)   | Serenity 16 (GCC v6.3.1) - CC7-base | 3331561  (17212) Dhrystones/s | 10 | [todo] |
+| Whetstone             | Serenity 16 (GCC v6.3.1) - CC7-base | 18000   (1721) Whetstones/s   | 10 | 88% (42%) 28 |
+|                       |                          |                               |                   | CPU Usage: | 
+| CoreMark              | Serenity 16 (GCC v6.3.1) - Shepherd-dev | 9044.26 (910.3) iterations/s  | 10 | 149% (42%) 153 |
+| Dhrystone (registers) | Serenity 16 (GCC v6.3.1) - Shepherd-dev | 3331740 (16366)  Dhrystones/s | 10 | 96% (21%) 88 |
 | Dhrystone (no regs)   | Serenity 16 (GCC v6.3.1) - Shepherd-dev | 3333575 (11600) Dhrystones/s  | 10 |  |
-| Whetstone             | Serenity 16 (GCC v6.3.1) - Shepherd-dev | 18000 (1721) Whetstones/s     | 10 | |
+| Whetstone             | Serenity 16 (GCC v6.3.1) - Shepherd-dev | 18000 (1721) Whetstones/s     | 10 | 87% (30%) 28 |
 |                       |                          |                               |    | | 
 | CoreMark              | Serenity 16 (GCC v8.3.1) | 9474.24 (23.79) iterations/s  | 10 |  |
 | Dhrystone (registers) | Serenity 16 (GCC v8.3.1) | 3395053 (12832) Dhrystones/s | 10 |  |
