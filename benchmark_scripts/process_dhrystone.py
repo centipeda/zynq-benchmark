@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+
 import statistics as stats
 
 num_runs = 10
