@@ -243,7 +243,7 @@ function main {
   check_pkgs
   setup
 
-  if [ DRY_RUN -eq 0 ] ; then
+  if [ $DRY_RUN -eq 0 ] ; then
     run_coremark
     run_dhrystone
     run_whetstone
