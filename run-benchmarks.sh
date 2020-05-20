@@ -45,6 +45,9 @@ Arguments:
                            (mean, std. deviation).Python 3 will be installed if it isn't already.
 
 -d, --dry-run              Don't run benchmarks, just check if requisite packages are installed.
+
+-i, --iperf [xx.xx.xx.xx]  Run iperf3 throughput test. Note the remote machine must have the same
+                           version of iperf installed and be running in server mode (iperf3 -s).
 EOF
 
 exit $1
@@ -213,6 +216,31 @@ function run_whetstone {
   cd ..
 }
 
+function run_iperf {
+  mkdir iperf
+  cd iperf
+
+  # UDP datagram size in bytes
+  frame_size=1500
+  step_size=2000
+
+  while [ $frame_size -lt 65508 ]
+  do
+    echo "[" >> iperf_result_${frame_size}.json
+    i=0
+    while [ $i -lt 10 ]
+    do
+	# -b sets maximum bitrate in b/s (default is 1Mb/s); -Z uses "zero copy" to save CPU; man iperf3 for more
+	iperf3 -c $IPERF -u -b 1000000000 -l $frame_size -J -Z >> iperf_result_${frame_size}.json
+	echo "," >> iperf_result_${frame_size}.json
+	i=$((i+1))
+	done
+    echo "]" >> iperf_result_${frame_size}.json
+    frame_size=$((frame_size+step_size))
+  done
+  cd ..
+}
+
 function main {
   if [ $# -eq 0 ]; then
     usage 1
@@ -233,6 +261,10 @@ function main {
       --dry-run)
         DRY_RUN=1
         ;;
+      -i|--iperf)
+        shift
+	      IPERF="$1"
+        ;;
       *)
         MACHINE_NAME="$1"
         ;;
@@ -247,6 +279,10 @@ function main {
     run_coremark
     run_dhrystone
     run_whetstone
+    
+    if [ $IPERF != "0" ]; then
+      run_iperf
+    fi
   fi
 
   echo
