@@ -36,18 +36,19 @@ Unfortunately, you'll have to put the results into SubmittingReuslts.md yourself
 This assumes that you have root access on this machine.
 
 Arguments:
--h, --help                 Display this message.
+-h, --help                    Display this message.
 
--g, --gcc                  Specify the version of devtoolset you want to use. The gcc within will
-                           be used at all places in the benchmarking process needed.
+-g, --gcc                     Specify the version of devtoolset you want to use. The gcc within will
+                              be used at all places in the benchmarking process needed.
 
--p, --process-results      Perform basic statistical analysis on benchmark scores
-                           (mean, std. deviation).Python 3 will be installed if it isn't already.
+-p, --process-results         Perform basic statistical analysis on benchmark scores
+                              (mean, std. deviation).Python 3 will be installed if it isn't already.
 
--d, --dry-run              Don't run benchmarks, just check if requisite packages are installed.
+-d, --dry-run                 Don't run benchmarks, just check if requisite packages are installed.
 
--i, --iperf [xx.xx.xx.xx]  Run iperf3 throughput test. Note the remote machine must have the same
-                           version of iperf installed and be running in server mode (iperf3 -s).
+-n, --network_test [ip addr]  Run iperf3 throughput test and ping latency test. Note the remote machine
+                              must have the same version of iperf installed and be running in server mode
+                              (iperf3 -s).
 EOF
 
 exit $1
@@ -114,7 +115,7 @@ function check_pkgs {
 function setup {
   mkdir benchmarks
   cp -r zynq-benchmark/benchmark_scripts benchmarks  # copy running dir into benchmarks
-  cp -r zynq-benchmark/benchmark_src benchmarks  # copy benchmarks src dir into benchmarks 
+  cp -r zynq-benchmark/benchmark_src benchmarks  # copy benchmarks src dir into benchmarks
   cd benchmarks
 }
 
@@ -139,7 +140,7 @@ function run_coremark {
 
   # if non-arm architecture, remove arm compiler flags from run file
   if [ $ARCH != arm* ]; then
-    sed -i 's/-march=armv7-a -mcpu=cortex-a9 -mfpu=neon-fp16 -march=armv7-a //' run_coremark.sh 
+    sed -i 's/-march=armv7-a -mcpu=cortex-a9 -mfpu=neon-fp16 -march=armv7-a //' run_coremark.sh
   fi
 
   # Run coremark
@@ -230,14 +231,28 @@ function run_iperf {
     i=0
     while [ $i -lt 10 ]
     do
-	# -b sets maximum bitrate in b/s (default is 1Mb/s); -Z uses "zero copy" to save CPU; man iperf3 for more
-	iperf3 -c $IPERF -u -b 1000000000 -l $frame_size -J -Z >> iperf_result_${frame_size}.json
-	echo "," >> iperf_result_${frame_size}.json
-	i=$((i+1))
-	done
+      # -b sets maximum bitrate in b/s (default is 1Mb/s); -Z uses "zero copy" to save CPU; man iperf3 for more
+      iperf3 -c $REMOTE_IP -u -b 1000000000 -l $frame_size -J -Z >> iperf_result_${frame_size}.json
+      echo "," >> iperf_result_${frame_size}.json
+      i=$((i+1))
+    done
     echo "]" >> iperf_result_${frame_size}.json
     frame_size=$((frame_size+step_size))
   done
+  cd ..
+}
+
+function run_ping {
+  mkdir ping
+  cd ping
+
+  # So far, these are all ping defaults spelled out for configurability's sake
+  PACKET_SIZE=56  # bytes
+  NUM_PINGS=10  # number of times to ping server
+
+  # No processing - ping is nice enough to do that for us
+  ping -c $NUM_PINGS -s $PACKET_SIZE $REMOTE_IP >> ping_results.txt
+
   cd ..
 }
 
@@ -261,9 +276,9 @@ function main {
       --dry-run)
         DRY_RUN=1
         ;;
-      -i|--iperf)
+      -n|--network-test)
         shift
-	      IPERF="$1"
+	      REMOTE_IP="$1"
         ;;
       *)
         MACHINE_NAME="$1"
@@ -279,9 +294,10 @@ function main {
     run_coremark
     run_dhrystone
     run_whetstone
-    
-    if [ $IPERF != "0" ]; then
+
+    if [ $REMOTE_IP != "0" ]; then
       run_iperf
+      run_ping
     fi
   fi
 
