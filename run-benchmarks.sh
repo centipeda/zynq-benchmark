@@ -113,6 +113,7 @@ function check_pkgs {
 
 ### BENCHMARKING
 function setup {
+  rm -rf benchmarks  # if there is a directory here already, we want it gone.
   mkdir benchmarks
   cp -r zynq-benchmark/benchmark_scripts benchmarks  # copy running dir into benchmarks
   cp -r zynq-benchmark/benchmark_src benchmarks  # copy benchmarks src dir into benchmarks
@@ -218,6 +219,7 @@ function run_whetstone {
 }
 
 function run_iperf {
+  echo "Running iperf tests with remote IP address $REMOTE_IP"
   mkdir iperf
   cd iperf
 
@@ -243,6 +245,7 @@ function run_iperf {
 }
 
 function run_ping {
+  echo "Testing latency using ping with remote IP address $REMOTE_IP"
   mkdir ping
   cd ping
 
@@ -273,12 +276,12 @@ function main {
       -p|--process-results)
         PROCESS_RESULTS=1
         ;;
-      --dry-run)
+      -d|--dry-run)
         DRY_RUN=1
         ;;
       -n|--network-test)
         shift
-	      REMOTE_IP="$1"
+        REMOTE_IP="$1"
         ;;
       *)
         MACHINE_NAME="$1"
@@ -290,7 +293,7 @@ function main {
   check_pkgs
   setup
 
-  if [ DRY_RUN -eq 0 ] ; then
+  if [ $DRY_RUN -eq 0 ] ; then
     run_coremark
     run_dhrystone
     run_whetstone
@@ -302,7 +305,7 @@ function main {
   fi
 
   echo
-  echo "Benchmarking process complete! Find the results inside of results.txt and results_summary.txt in each folder. CPU and memory usage are in ps.log in each folder. Note that CPU usage is computed as the percentage of CPU time used over the lifetime of the process."
+  echo "If no errors occurred, find the results inside of results.txt and results_summary.txt in each folder. CPU and memory usage are in ps.log in each folder. Note that CPU usage is computed as the percentage of CPU time used over the lifetime of the process."
   echo "Exiting program."
   echo
 }
