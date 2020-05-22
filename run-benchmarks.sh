@@ -1,3 +1,4 @@
+#!/bin/bash
 # RUN-BENCHMARKS.sh
 #
 # Runs benchmarks from https://github.com/centipeda/zynq-benchmark.git on a machine.
@@ -17,10 +18,15 @@
 
 ### CONSTANTS
 
+THIS_DIR="$(pwd)"
+SRC_DIR="benchmark_src"
+SCRIPTS_DIR="benchmark_scripts"
+MACHINE_NAME="benchmark"
+CHECK_PACKAGES="0"
 ARCH=$(arch)  # get this machine's architecture
 GCC_V=6  # The version of gcc you intend to use
-PROCESS_RESULTS=0  # If you want to install python3 and perform statistical analysis on benchmarking results
-DRY_RUN=0
+PROCESS_RESULTS="0"  # If you want to install python3 and perform statistical analysis on benchmarking results
+DRY_RUN="0"
 
 function usage {
 cat <<EOF
@@ -42,7 +48,9 @@ Arguments:
                            be used at all places in the benchmarking process needed.
 
 -p, --process-results      Perform basic statistical analysis on benchmark scores
-                           (mean, std. deviation).Python 3 will be installed if it isn't already.
+                           (mean, std. deviation). Python 3 will be installed if it isn't already.
+
+-c, --check-pkgs           Checks if the required packages are installed using the yum package manager.
 
 -d, --dry-run              Don't run benchmarks, just check if requisite packages are installed.
 EOF
@@ -64,7 +72,7 @@ function isinstalled {
 }
 
 # Install and enable appropriate gcc
-function check_pkgs {
+function check_pkgs_yum {
 
   echo "Activating correct version of gcc if not already active..."
   VERSION_STRING=" $GCC_V"  #FIXME: "is there a string in the gcc version output that starts with this number" is NOT good coding. Sorry.
@@ -109,53 +117,58 @@ function check_pkgs {
 
 ### BENCHMARKING
 function setup {
-  mkdir benchmarks
-  cp -r zynq-benchmark/benchmark_scripts benchmarks  # copy running dir into benchmarks
-  cp -r zynq-benchmark/benchmark_src benchmarks  # copy benchmarks src dir into benchmarks 
-  cd benchmarks
+  echo "Creating directory $1..."
+  mkdir -p $1
+  echo "Updating Coremark source..."
+  git submodule update --init
 }
 
 # Record CPU and memory usage
 function log_hw {
-  echo "1" >> benchmark_active.txt
+  echo "1" >> $2/benchmark_active.txt
   #echo "%CPU %MEM $(date)" >> ps.txt
-  while [ $(tail -n 1 benchmark_active.txt) == "1" ]
+  while [ $(tail -n 1 $2/benchmark_active.txt) == "1" ]
   do
-    ps -o pcpu= -C $1 >> ps.txt
+    ps -o pcpu= -C $1 >> $2/ps.txt
     sleep 2
   done
 }
 
 function run_coremark {
+
   ## COREMARK
-  echo "Running Coremark benchmarks."
-  rm -rf coremark  # if there is a directory here already, we want it gone.
-  git clone https://github.com/eembc/coremark
-  cd coremark
-  mv ../benchmark_scripts/coremark/run_coremark.sh run_coremark.sh
+  echo "Running Coremark..."
 
   # if non-arm architecture, remove arm compiler flags from run file
+  args="XCFLAGS=\"-march=armv7-a -mcpu=cortex-a9 -mfpu=neon-fp16 -march=armv7-a\""
   if [ $ARCH != arm* ]; then
-    sed -i 's/-march=armv7-a -mcpu=cortex-a9 -mfpu=neon-fp16 -march=armv7-a //' run_coremark.sh 
+    args=""
   fi
 
   # Run coremark
-  log_hw "coremark.exe" &
-  sh run_coremark.sh
-  echo "0" >> benchmark_active.txt
+  log_hw "coremark.exe" "$2" &
+  for n in {1..10}
+  do  
+      make -C $SRC_DIR/coremark clean
+      make -C $SRC_DIR/coremark $args
+      echo "Run #$n: $(tail -n 1 $SRC_DIR/coremark/run1.log)"
+      tail -n 1 $SRC_DIR/coremark/run1.log >> $1/coremark.txt
+  done
+
+  # clean up
+  make -C $SRC_DIR/coremark clean
+
+  echo "0" >> $1/benchmark_active.txt
 
   # Process results.txt
   if [ $PROCESS_RESULTS != "0" ]; then
-    mv ../benchmark_scripts/coremark/process_coremark.py process_coremark.py
-    python3 process_coremark.py >> results_summary.txt
+    python3 $SCRIPTS_DIR/process_coremark.py >> $1/results_summary.txt
   fi
-
-  cd ..
 }
 
 function run_dhrystone {
   ## DHRYSTONE
-  echo "Running Dhrystone benchmarks."
+  echo "Running Dhrystone benchmarks...."
   rm -rf dhrystone  # if there is a directory here already, we want it gone.
   mv benchmark_src/dhrystone/ .  # get predownloaded dhrystone source
   cd dhrystone
@@ -173,17 +186,14 @@ function run_dhrystone {
   # Make and run
   make
   mv ../benchmark_scripts/dhrystone/run_dhrystone.sh run_dhrystone.sh
-  log_hw "gcc_dry2reg" &
+  log_hw "gcc_dry2reg" "$2" &
   sh run_dhrystone.sh
   echo "0" >> benchmark_active.txt
 
   # Process results.txt
   if [ $PROCESS_RESULTS != "0" ]; then
-    mv ../benchmark_scripts/dhrystone/process_dhrystone.py process_dhrystone.py
-    python3 process_dhrystone.py >> results_summary.txt
+    python3 "$SCRIPTS_DIR/process_dhrystone.py" >> $1/results_summary.txt
   fi
-
-  cd ..
 }
 
 function run_whetstone {
@@ -228,10 +238,13 @@ function main {
         GCC="$1"
         ;;
       -p|--process-results)
-        PROCESS_RESULTS=1
+        PROCESS_RESULTS="1"
         ;;
       --dry-run)
-        DRY_RUN=1
+        DRY_RUN="1"
+        ;;
+      -c|--check-pkgs)
+        CHECK_PACKAGES="1"
         ;;
       *)
         MACHINE_NAME="$1"
@@ -240,13 +253,20 @@ function main {
     shift
   done
 
-  check_pkgs
-  setup
+  if [ CHECK_PACKAGES == "1" ] ; then
+    check_pkgs
+  fi
 
-  if [ DRY_RUN -eq 0 ] ; then
-    run_coremark
-    run_dhrystone
-    run_whetstone
+  # creates a directory named $MACHINE_NAME_results to store results
+  targetdir="${MACHINE_NAME}_results"
+  setup $targetdir
+
+
+  if [ $DRY_RUN == "0" ] ; then
+    echo "Running benchmarks..."
+    run_coremark $targetdir
+    # run_dhrystone $targetdir
+    # run_whetstone $targetdir
   fi
 
   echo
