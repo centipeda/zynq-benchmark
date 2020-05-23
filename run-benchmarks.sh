@@ -17,7 +17,7 @@
 THIS_DIR="$(pwd)"
 SRC_DIR="benchmark_src"
 SCRIPTS_DIR="benchmark_scripts"
-# MACHINE_NAME="benchmark"
+MACHINE_NAME="$(hostname)"
 CHECK_PACKAGES="0"
 ARCH=$(arch)  # get this machine's architecture
 GCC_V=6  # The version of gcc you intend to use
@@ -271,7 +271,7 @@ function main {
   fi
 
 
-  RESULTS_DIR=$(date +"./results_%Y%m%d_%H%M%S")
+  RESULTS_DIR=$(date +"./${MACHINE_NAME}_results_%Y%m%d_%H%M%S")
 
   echo $0, $(date +"%Y-%m-%d %H:%M:%S"), selected parameters:
   echo "THIS_DIRECTORY:           $THIS_DIR"
@@ -287,7 +287,7 @@ function main {
 
   if [ $DRY_RUN == "0" ] ; then
     echo "Running benchmarks..."
-    # run_coremark $RESULTS_DIR
+    run_coremark $RESULTS_DIR
     run_dhrystone $RESULTS_DIR
     run_whetstone $RESULTS_DIR
   fi
