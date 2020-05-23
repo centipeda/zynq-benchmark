@@ -266,8 +266,8 @@ function main {
     shift
   done
 
-  if [ CHECK_PACKAGES == "1" ] ; then
-    check_pkgs
+  if [ $CHECK_PACKAGES == "1" ] ; then
+    check_pkgs_yum
   fi
 
 
