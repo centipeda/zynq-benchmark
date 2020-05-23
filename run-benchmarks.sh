@@ -24,6 +24,13 @@ GCC_V=6  # The version of gcc you intend to use
 PROCESS_RESULTS="1"  # If you want to perform statistical analysis on benchmarking results
 DRY_RUN="0"
 
+# Automatically detect number of threads
+if [ command -v nproc ] ; then
+  THREADS=nproc
+else
+  THREADS=2
+fi
+
 function usage {
 cat <<EOF
 Usage: [sudo] $0
@@ -130,10 +137,12 @@ function run_coremark {
   echo "Running Coremark..."
 
   # if non-arm architecture, remove arm compiler flags from run file
-  args="XCFLAGS=\"-march=armv7-a -mcpu=cortex-a9 -mfpu=neon-fp16 -march=armv7-a\""
+  arm="-march=armv7-a -mcpu=cortex-a9 -mfpu=neon-fp16 -march=armv7-a"
   if [ $ARCH != arm* ]; then
-    args=""
+    arm=""
   fi
+  
+  args="XCFLAGS=\"-03 -DMULTITHREAD=${THREADS} -DUSE_PTHREAD -lpthread -lrt ${arm}\""
 
   # Run coremark
   log_hw "coremark.exe" "$1" &
