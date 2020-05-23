@@ -4,7 +4,7 @@ import statistics as stats
 
 num_runs = 10
 with open('results.txt') as resultFile:
-    lines = resultFile.readlines()
+    lines = f.readlines()
     noRegDry = [float(l.split()[-1]) for l in lines[1:num_runs+1]]
     regDry = [float(l.split()[-1]) for l in lines[num_runs+4:]]
 

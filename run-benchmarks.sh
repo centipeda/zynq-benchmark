@@ -3,10 +3,6 @@
 #
 # Runs benchmarks from https://github.com/centipeda/zynq-benchmark.git on a machine.
 # Follows the procedure specified in https://github.com/centipeda/zynq-benchmark/blob/master/RunningBenchmarks.md.
-#
-# Put this file wherever you want the benchmarking repo and benchmarking directories to appear, then run it.
-# (Or, just cd to a directory and copy paste the contents of this file.)
-# This can be run twice consecutively without any problems.
 # Unfortunately, you'll have to put the results into SubmittingReuslts.md yourself!
 # This assumes that you have root access on this machine.
 
@@ -21,30 +17,24 @@
 THIS_DIR="$(pwd)"
 SRC_DIR="benchmark_src"
 SCRIPTS_DIR="benchmark_scripts"
-MACHINE_NAME="benchmark"
+# MACHINE_NAME="benchmark"
 CHECK_PACKAGES="0"
 ARCH=$(arch)  # get this machine's architecture
 GCC_V=6  # The version of gcc you intend to use
-PROCESS_RESULTS="0"  # If you want to install python3 and perform statistical analysis on benchmarking results
+PROCESS_RESULTS="1"  # If you want to perform statistical analysis on benchmarking results
 DRY_RUN="0"
 
 function usage {
 cat <<EOF
-Usage: (sudo) $(basename $0) [GCC VERSION]
+Usage: [sudo] $0
 
 Runs benchmarks from https://github.com/centipeda/zynq-benchmark.git.
 Follows the procedure specified in https://github.com/centipeda/zynq-benchmark/blob/master/RunningBenchmarks.md.
 
-Put this file wherever you want the benchmarking repo and benchmarking directories to appear, then run it.
-(Or, just cd to a directory and copy paste the contents of this file.)
-This can be run twice consecutively without any problems.
-Unfortunately, you'll have to put the results into SubmittingReuslts.md yourself!
-This assumes that you have root access on this machine.
-
 Arguments:
 -h, --help                 Display this message.
 
--g, --gcc                  Specify the version of devtoolset you want to use. The gcc within will
+-g, --gcc <version>        Specify the version of devtoolset you want to use. The gcc within will
                            be used at all places in the benchmarking process needed.
 
 -p, --process-results      Perform basic statistical analysis on benchmark scores
@@ -146,7 +136,7 @@ function run_coremark {
   fi
 
   # Run coremark
-  log_hw "coremark.exe" "$2" &
+  log_hw "coremark.exe" "$1" &
   for n in {1..10}
   do  
       make -C $SRC_DIR/coremark clean
@@ -156,77 +146,100 @@ function run_coremark {
   done
 
   # clean up
+  echo "Cleaning Coremark source..."
   make -C $SRC_DIR/coremark clean
 
   echo "0" >> $1/benchmark_active.txt
 
   # Process results.txt
   if [ $PROCESS_RESULTS != "0" ]; then
-    python3 $SCRIPTS_DIR/process_coremark.py >> $1/results_summary.txt
+    python3 $SCRIPTS_DIR/process_results.py coremark $1/coremark.txt | tee $1/results_summary.txt
   fi
 }
 
 function run_dhrystone {
   ## DHRYSTONE
-  echo "Running Dhrystone benchmarks...."
-  rm -rf dhrystone  # if there is a directory here already, we want it gone.
-  mv benchmark_src/dhrystone/ .  # get predownloaded dhrystone source
-  cd dhrystone
+  echo "Running Dhrystone benchmarks..."
 
-  # Edit Makefile
-  sed -i 's/#TIME_FUNC=     -DTIME/TIME_FUNC=     -DTIME/' Makefile  # uncomment this line...
-  sed -i 's/TIME_FUNC=     -DTIMES/#TIME_FUNC=     -DTIMES/' Makefile  # ...comment out this line.
-  # add compiler flags
+  echo "Cleaning Dhrystone source..."
+  make -C $SRC_DIR/dhrystone clean
+
+  # Set Makefile variables.
+  TIME_FUNC="-DTIME" # Might need to be "-DTIME" instead, depending on the system.
   if [ $ARCH == "arm" ]; then
-    sed -i 's/GCCOPTIM=       -O/GCCOPTIM=       -O -O3 -Ofast --mcpu=cortex-a9 -mfpu=vfpv3-fp16/' Makefile
+    GCCOPTIM="-O -O3 -Ofast --mcpu=cortex-a9 -mfpu=vfpv3-fp16"
   else
-    sed -i 's/GCCOPTIM=       -O/GCCOPTIM=       -O -O3 -Ofast/' Makefile
+    GCCOPTIM="-O -O3 -Ofast"
   fi
 
-  # Make and run
-  make
-  mv ../benchmark_scripts/dhrystone/run_dhrystone.sh run_dhrystone.sh
-  log_hw "gcc_dry2reg" "$2" &
-  sh run_dhrystone.sh
-  echo "0" >> benchmark_active.txt
+  echo "Compiling Dhrystone..."
+  make -C $SRC_DIR/dhrystone TIME_FUNC="$TIME_FUNC" GCCOPTIM="$GCCOPTIM" all
+
+  log_hw "gcc_dry2reg" "$1" &
+
+  RUNS=10
+  ITERS=100000000
+  echo "Running Dhrystone, no registers..."
+  for i in $( seq 1 $RUNS )
+  do
+    printf "run #$i: "
+    echo $ITERS | $SRC_DIR/dhrystone/gcc_dry2 | tail -n 2 | head -n 1 | tee -a $1/dhrystone.txt
+  done
+
+  echo "Running Dhrystone with registers..."
+  for i in $( seq 1 $RUNS )
+  do
+    printf "run #$i: "
+    echo $ITERS | $SRC_DIR/dhrystone/gcc_dry2reg | tail -n 2 | head -n 1 | tee -a $1/dhrystone.txt
+  done
+
+  echo "Cleaning Dhrystone source..."
+  make -C $SRC_DIR/dhrystone clean
+
+  echo "0" >> $1/benchmark_active.txt
 
   # Process results.txt
   if [ $PROCESS_RESULTS != "0" ]; then
-    python3 "$SCRIPTS_DIR/process_dhrystone.py" >> $1/results_summary.txt
+    python3 $SCRIPTS_DIR/process_results.py dhrystone $1/dhrystone.txt | tee -a $1/results_summary.txt
   fi
 }
 
 function run_whetstone {
-  ## WHETSTONE
-  echo "Running Whetstone benchmarks."
-  rm -rf whetstone  # if there is a directory here already, we want it gone.
-  mv benchmark_src/whetstone/ .  # get predownloaded whetstone source
-  cd whetstone
+  echo "Running Whetstone benchmarks..."
 
-  # Make and then run whetstone
+  # Set compiler flags
   if [ $ARCH == "arm" ]; then
-    gcc whetstone.c -O3 -Ofast --mcpu=cortex-a9 -mfpu=vfpv3-fp16 -DNDEBUG -lm -o whetstone
+    CFLAGS="-O3 -Ofast --mcpu=cortex-a9 -mfpu=vfpv3-fp16 -DNDEBUG -lm"
   else
-    gcc whetstone.c -O3 -Ofast -lm -o whetstone
+    CFLAGS="-O3 -Ofast -lm"
   fi
-  mv ../benchmark_scripts/whetstone/run_whetstone.sh run_whetstone.sh
-  log_hw "whetstone" &
-  sh run_whetstone.sh
-  echo "0" >> benchmark_active.txt
+
+  echo "Compiling Whetstone..."
+  make -C $SRC_DIR/whetstone CFLAGS="$CFLAGS" whetstone
+
+  log_hw "whetstone" "$1" &
+  LOOPS=1000000
+  for n in {1..10}
+  do  
+    printf "Run #$n: "
+    $SRC_DIR/whetstone/whetstone $LOOPS | tail -n 1 | tee -a $1/whetstone.txt
+  done
+
+  echo "Cleaning Whetstone source directory..."
+  make -C $SRC_DIR/whetstone clean
+
+  echo "0" >> $1/benchmark_active.txt
 
   # Process results.txt
   if [ $PROCESS_RESULTS != "0" ]; then
-    mv ../benchmark_scripts/whetstone/process_whetstone.py process_whetstone.py
-    python3 process_whetstone.py >> results_summary.txt
+    python3 $SCRIPTS_DIR/process_results.py whetstone $1/whetstone.txt | tee -a $1/results_summary.txt
   fi
-
-  cd ..
 }
 
 function main {
-  if [ $# -eq 0 ]; then
-    usage 1
-  fi
+  # if [ $# -eq 0 ]; then
+  #   usage 1
+  # fi
 
   while [ $# -gt 0 ]; do
     case $1 in
@@ -257,21 +270,30 @@ function main {
     check_pkgs
   fi
 
-  # creates a directory named $MACHINE_NAME_results to store results
-  targetdir="${MACHINE_NAME}_results"
-  setup $targetdir
 
+  RESULTS_DIR=$(date +"./results_%Y%m%d_%H%M%S")
+
+  echo $0, $(date +"%Y-%m-%d %H:%M:%S"), selected parameters:
+  echo "THIS_DIRECTORY:           $THIS_DIR"
+  echo "SRC_DIRECTORY:            $SRC_DIR"
+  echo "SCRIPTS_DIRECTORY:        $SCRIPTS_DIR"
+  echo "RESULTS DIRECTORY:        $RESULTS_DIR"
+  echo "CHECK_PACKAGES:           $CHECK_PACKAGES"
+  echo "GCC_VERSION:              $GCC_V"
+  echo "PROCESS_RESULTS:          $PROCESS_RESULTS"
+  echo "DRY_RUN:                  $DRY_RUN"
+
+  setup $RESULTS_DIR
 
   if [ $DRY_RUN == "0" ] ; then
     echo "Running benchmarks..."
-    run_coremark $targetdir
-    # run_dhrystone $targetdir
-    # run_whetstone $targetdir
+    # run_coremark $RESULTS_DIR
+    run_dhrystone $RESULTS_DIR
+    run_whetstone $RESULTS_DIR
   fi
 
   echo
-  echo "Benchmarking process complete! Find the results inside of results.txt and results_summary.txt in each folder. CPU and memory usage are in ps.log in each folder. Note that CPU usage is computed as the percentage of CPU time used over the lifetime of the process."
-  echo "Exiting program."
+  echo "Benchmarking process complete! The run results have been stored in $RESULTS_DIR."
   echo
 }
 
