@@ -15,8 +15,9 @@
 ### CONSTANTS
 
 THIS_DIR="$(pwd)"
-SRC_DIR="benchmark_src"
-SCRIPTS_DIR="benchmark_scripts"
+SRC_DIR="./benchmark_src"
+SCRIPTS_DIR="./benchmark_scripts"
+DOWNLOAD_SOURCE="1"
 MACHINE_NAME="$(hostname)"
 CHECK_PACKAGES="0"
 ARCH=$(uname -m)  # get this machine's architecture
@@ -25,8 +26,8 @@ PROCESS_RESULTS="1"  # If you want to perform statistical analysis on benchmarki
 DRY_RUN="0"
 
 # Automatically detect number of threads
-if [ command -v nproc ] ; then
-  THREADS=nproc
+if [ $(command -v nproc) ] ; then
+  THREADS=$(nproc)
 else
   THREADS=2
 fi
@@ -50,6 +51,10 @@ Arguments:
 -c, --check-pkgs           Checks if the required packages are installed using the yum package manager.
 
 -d, --dry-run              Don't run benchmarks, just check if requisite packages are installed.
+
+--no-download              Don't attempt to download the Coremark source code from the Coremark GitHub
+                           repository (assumes the code is present.) Will cause the script to fail if the
+                           Coremark source is not present in $SRC_DIR/coremark.
 EOF
 
 exit $1
@@ -116,8 +121,10 @@ function check_pkgs_yum {
 function setup {
   echo "Creating directory $1..."
   mkdir -p $1
-  echo "Updating Coremark source..."
-  git submodule update --init
+  echo "Attempting to update Coremark source..."
+  if [ $DOWNLOAD_SOURCE == "1" ] ; then
+      git submodule update --init || echo "Failed to download Coremark source from GitHub. If the source code is present in $SRC_DIR/coremark, run this script again with the --no-download flag to attempt to run Coremark anyway."
+  fi
 }
 
 # Record CPU and memory usage
@@ -142,7 +149,7 @@ function run_coremark {
     arm=""
   fi
   
-  args="XCFLAGS=\"-03 -DMULTITHREAD=${THREADS} -DUSE_PTHREAD -lpthread -lrt ${arm}\""
+  args="XCFLAGS=\"-O3 -DMULTITHREAD=${THREADS} -DUSE_PTHREAD -lpthread -lrt ${arm}\""
 
   # Run coremark
   log_hw "coremark.exe" "$1" &
@@ -268,6 +275,9 @@ function main {
       -c|--check-pkgs)
         CHECK_PACKAGES="1"
         ;;
+      --no-download)
+        DOWNLOAD_SOURCE="0"
+        ;;
       *)
         MACHINE_NAME="$1"
         ;;
@@ -290,7 +300,9 @@ function main {
   echo "CHECK_PACKAGES:           $CHECK_PACKAGES"
   echo "GCC_VERSION:              $GCC_V"
   echo "PROCESS_RESULTS:          $PROCESS_RESULTS"
+  echo "DOWNLOAD_COREMARK_SOURCE: $DOWNLOAD_SOURCE"
   echo "DRY_RUN:                  $DRY_RUN"
+  echo "THREADS:                  $THREADS"
 
   setup $RESULTS_DIR
 
