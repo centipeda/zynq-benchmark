@@ -148,13 +148,13 @@ function run_coremark {
   if [ $ARCH != arm* ]; then
     arm=""
   fi
-  
+
   args="XCFLAGS=\"-O3 -DMULTITHREAD=${THREADS} -DUSE_PTHREAD -lpthread -lrt ${arm}\""
 
   # Run coremark
   log_hw "coremark.exe" "$1" &
   for n in {1..10}
-  do  
+  do
       make -C $SRC_DIR/coremark clean
       make -C $SRC_DIR/coremark $args
       echo "Run #$n: $(tail -n 1 $SRC_DIR/coremark/run1.log)"
@@ -166,11 +166,6 @@ function run_coremark {
   make -C $SRC_DIR/coremark clean
 
   echo "0" >> $1/benchmark_active.txt
-
-  # Process results.txt
-  if [ $PROCESS_RESULTS != "0" ]; then
-    python3 $SCRIPTS_DIR/process_results.py coremark $1/coremark.txt | tee $1/results_summary.txt
-  fi
 }
 
 function run_dhrystone {
@@ -213,11 +208,6 @@ function run_dhrystone {
   make -C $SRC_DIR/dhrystone clean
 
   echo "0" >> $1/benchmark_active.txt
-
-  # Process results.txt
-  if [ $PROCESS_RESULTS != "0" ]; then
-    python3 $SCRIPTS_DIR/process_results.py dhrystone $1/dhrystone.txt | tee -a $1/results_summary.txt
-  fi
 }
 
 function run_whetstone {
@@ -236,7 +226,7 @@ function run_whetstone {
   log_hw "whetstone" "$1" &
   LOOPS=1000000
   for n in {1..10}
-  do  
+  do
     printf "Run #$n: "
     $SRC_DIR/whetstone/whetstone $LOOPS | tail -n 1 | tee -a $1/whetstone.txt
   done
@@ -246,10 +236,14 @@ function run_whetstone {
 
   echo "0" >> $1/benchmark_active.txt
 
-  # Process results.txt
-  if [ $PROCESS_RESULTS != "0" ]; then
-    python3 $SCRIPTS_DIR/process_results.py whetstone $1/whetstone.txt | tee -a $1/results_summary.txt
-  fi
+}
+
+function process_results {
+  echo "Processing results.txt files using python3..."
+
+  python3 $SCRIPTS_DIR/process_results.py coremark $1/coremark.txt | tee $1/results_summary.txt
+  python3 $SCRIPTS_DIR/process_results.py dhrystone $1/dhrystone.txt | tee -a $1/results_summary.txt
+  python3 $SCRIPTS_DIR/process_results.py whetstone $1/whetstone.txt | tee -a $1/results_summary.txt
 }
 
 function main {
@@ -311,6 +305,11 @@ function main {
     run_coremark $RESULTS_DIR
     run_dhrystone $RESULTS_DIR
     run_whetstone $RESULTS_DIR
+
+    # Process results.txt
+    if [ $PROCESS_RESULTS != "0" ]; then
+      process_results
+    fi
   fi
 
   echo
