@@ -40,21 +40,25 @@ Runs benchmarks from https://github.com/centipeda/zynq-benchmark.git.
 Follows the procedure specified in https://github.com/centipeda/zynq-benchmark/blob/master/RunningBenchmarks.md.
 
 Arguments:
--h, --help                 Display this message.
+-h, --help                    Display this message.
 
--g, --gcc <version>        Specify the version of devtoolset you want to use. The gcc within will
-                           be used at all places in the benchmarking process needed.
+-g, --gcc <version>           Specify the version of devtoolset you want to use. The gcc within will
+                              be used at all places in the benchmarking process needed.
 
--p, --process-results      Perform basic statistical analysis on benchmark scores
-                           (mean, std. deviation). Python 3 will be installed if it isn't already.
+-p, --process-results         Perform basic statistical analysis on benchmark scores
+                              (mean, std. deviation). Python 3 will be installed if it isn't already.
 
--c, --check-pkgs           Checks if the required packages are installed using the yum package manager.
+-c, --check-pkgs              Checks if the required packages are installed using the yum package manager.
 
--d, --dry-run              Don't run benchmarks, just check if requisite packages are installed.
+-d, --dry-run                 Don't run benchmarks, just check if requisite packages are installed.
 
---no-download              Don't attempt to download the Coremark source code from the Coremark GitHub
-                           repository (assumes the code is present.) Will cause the script to fail if the
-                           Coremark source is not present in $SRC_DIR/coremark.
+-n, --network_test [ip addr]  Run iperf3 throughput test and ping latency test. Note the remote machine
+                              must have the same version of iperf installed and be running in server mode
+                              (iperf3 -s).
+
+--no-download                 Don't attempt to download the Coremark source code from the Coremark GitHub
+                              repository (assumes the code is present.) Will cause the script to fail if the
+                              Coremark source is not present in $SRC_DIR/coremark.
 EOF
 
 exit $1
@@ -77,9 +81,9 @@ function isinstalled {
 function check_pkgs_yum {
 
   echo "Activating correct version of gcc if not already active..."
-  VERSION_STRING=" $GCC_V"  #FIXME: "is there a string in the gcc version output that starts with this number" is NOT good coding. Sorry.
-
-  if [[ "$(gcc --version)" != *$VERSION_STRING* ]]; then  # I know this is hacky, but it's the only way I could think to do it
+  VERSION_STRING=" $GCC_V"  #FIXME: "is there a string in the gcc version output that starts with this number" is NOT good coding.
+                            #       If you have a better idea, please submit a pull request.
+  if [[ "$(gcc --version)" != *$VERSION_STRING* ]]; then
     echo "Requested version of gcc not active."
     echo "Installing appropriate devtoolset if not installed..."
     if ! isinstalled devtoolset-$GCC_V; then
@@ -123,7 +127,9 @@ function setup {
   mkdir -p $1
   echo "Attempting to update Coremark source..."
   if [ $DOWNLOAD_SOURCE == "1" ] ; then
-      git submodule update --init || echo "Failed to download Coremark source from GitHub. If the source code is present in $SRC_DIR/coremark, run this script again with the --no-download flag to attempt to run Coremark anyway."
+    GIT_FAIL_MSSG="Failed to download Coremark source from GitHub."
+    COREMARK_SRC_MSSG="If the source code is present in $SRC_DIR/coremark, run this script again with the --no-download flag to attempt to run Coremark anyway."
+    git submodule update --init || echo $GIT_FAIL_MSSG $COREMARK_SRC_MSSG
   fi
 }
 
@@ -246,6 +252,47 @@ function process_results {
   python3 $SCRIPTS_DIR/process_results.py whetstone $1/whetstone.txt | tee -a $1/results_summary.txt
 }
 
+function run_iperf {
+  echo "Running iperf tests with remote IP address $REMOTE_IP"
+  mkdir iperf
+  cd iperf
+
+  # UDP datagram size in bytes
+  frame_size=1500
+  step_size=2000
+
+  while [ $frame_size -lt 65508 ]
+  do
+    echo "[" >> iperf_result_${frame_size}.json
+    i=0
+    while [ $i -lt 10 ]
+    do
+      # -b sets maximum bitrate in b/s (default is 1Mb/s); -Z uses "zero copy" to save CPU; man iperf3 for more
+      iperf3 -c $REMOTE_IP -u -b 1000000000 -l $frame_size -J -Z >> iperf_result_${frame_size}.json
+      echo "," >> iperf_result_${frame_size}.json
+      i=$((i+1))
+    done
+    echo "]" >> iperf_result_${frame_size}.json
+    frame_size=$((frame_size+step_size))
+  done
+  cd ..
+}
+
+function run_ping {
+  echo "Testing latency using ping with remote IP address $REMOTE_IP"
+  mkdir ping
+  cd ping
+
+  # So far, these are all ping defaults spelled out for configurability's sake
+  PACKET_SIZE=56  # bytes
+  NUM_PINGS=10  # number of times to ping server
+
+  # No processing - ping is nice enough to do that for us
+  ping -c $NUM_PINGS -s $PACKET_SIZE $REMOTE_IP >> ping_results.txt
+
+  cd ..
+}
+
 function main {
   # if [ $# -eq 0 ]; then
   #   usage 1
@@ -263,7 +310,7 @@ function main {
       -p|--process-results)
         PROCESS_RESULTS="1"
         ;;
-      --dry-run)
+      -d|--dry-run)
         DRY_RUN="1"
         ;;
       -c|--check-pkgs)
@@ -271,6 +318,10 @@ function main {
         ;;
       --no-download)
         DOWNLOAD_SOURCE="0"
+        ;;
+      -n|--network-test)
+        shift
+        REMOTE_IP="$1"
         ;;
       *)
         MACHINE_NAME="$1"
@@ -300,16 +351,21 @@ function main {
 
   setup $RESULTS_DIR
 
-  if [ $DRY_RUN == "0" ] ; then
-    echo "Running benchmarks..."
-    run_coremark $RESULTS_DIR
-    run_dhrystone $RESULTS_DIR
-    run_whetstone $RESULTS_DIR
+  if [ $DRY_RUN -eq 0 ] ; then
+    run_coremark
+    run_dhrystone
+    run_whetstone
+
+    if [ $REMOTE_IP != "0" ]; then
+      run_iperf
+      run_ping
+    fi
 
     # Process results.txt
     if [ $PROCESS_RESULTS != "0" ]; then
       process_results
     fi
+
   fi
 
   echo
