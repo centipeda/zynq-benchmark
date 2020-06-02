@@ -1,11 +1,8 @@
+#!/bin/bash
 # RUN-BENCHMARKS.sh
 #
 # Runs benchmarks from https://github.com/centipeda/zynq-benchmark.git on a machine.
 # Follows the procedure specified in https://github.com/centipeda/zynq-benchmark/blob/master/RunningBenchmarks.md.
-#
-# Put this file wherever you want the benchmarking repo and benchmarking directories to appear, then run it.
-# (Or, just cd to a directory and copy paste the contents of this file.)
-# This can be run twice consecutively without any problems.
 # Unfortunately, you'll have to put the results into SubmittingReuslts.md yourself!
 # This assumes that you have root access on this machine.
 
@@ -17,38 +14,51 @@
 
 ### CONSTANTS
 
-ARCH=$(arch)  # get this machine's architecture
+THIS_DIR="$(pwd)"
+SRC_DIR="./benchmark_src"
+SCRIPTS_DIR="./benchmark_scripts"
+DOWNLOAD_SOURCE="1"
+MACHINE_NAME="$(hostname)"
+CHECK_PACKAGES="0"
+ARCH=$(uname -m)  # get this machine's architecture
 GCC_V=6  # The version of gcc you intend to use
-PROCESS_RESULTS=0  # If you want to install python3 and perform statistical analysis on benchmarking results
-DRY_RUN=0
+PROCESS_RESULTS="1"  # If you want to perform statistical analysis on benchmarking results
+DRY_RUN="0"
+
+# Automatically detect number of threads
+if [ $(command -v nproc) ] ; then
+  THREADS=$(nproc)
+else
+  THREADS=2
+fi
 
 function usage {
 cat <<EOF
-Usage: (sudo) $(basename $0) [GCC VERSION]
+Usage: [sudo] $0
 
 Runs benchmarks from https://github.com/centipeda/zynq-benchmark.git.
 Follows the procedure specified in https://github.com/centipeda/zynq-benchmark/blob/master/RunningBenchmarks.md.
 
-Put this file wherever you want the benchmarking repo and benchmarking directories to appear, then run it.
-(Or, just cd to a directory and copy paste the contents of this file.)
-This can be run twice consecutively without any problems.
-Unfortunately, you'll have to put the results into SubmittingReuslts.md yourself!
-This assumes that you have root access on this machine.
-
 Arguments:
 -h, --help                    Display this message.
 
--g, --gcc                     Specify the version of devtoolset you want to use. The gcc within will
+-g, --gcc <version>           Specify the version of devtoolset you want to use. The gcc within will
                               be used at all places in the benchmarking process needed.
 
 -p, --process-results         Perform basic statistical analysis on benchmark scores
-                              (mean, std. deviation).Python 3 will be installed if it isn't already.
+                              (mean, std. deviation). Python 3 will be installed if it isn't already.
+
+-c, --check-pkgs              Checks if the required packages are installed using the yum package manager.
 
 -d, --dry-run                 Don't run benchmarks, just check if requisite packages are installed.
 
 -n, --network_test [ip addr]  Run iperf3 throughput test and ping latency test. Note the remote machine
                               must have the same version of iperf installed and be running in server mode
                               (iperf3 -s).
+
+--no-download                 Don't attempt to download the Coremark source code from the Coremark GitHub
+                              repository (assumes the code is present.) Will cause the script to fail if the
+                              Coremark source is not present in $SRC_DIR/coremark.
 EOF
 
 exit $1
@@ -68,12 +78,12 @@ function isinstalled {
 }
 
 # Install and enable appropriate gcc
-function check_pkgs {
+function check_pkgs_yum {
 
   echo "Activating correct version of gcc if not already active..."
-  VERSION_STRING=" $GCC_V"  #FIXME: "is there a string in the gcc version output that starts with this number" is NOT good coding. Sorry.
-
-  if [[ "$(gcc --version)" != *$VERSION_STRING* ]]; then  # I know this is hacky, but it's the only way I could think to do it
+  VERSION_STRING=" $GCC_V"  #FIXME: "is there a string in the gcc version output that starts with this number" is NOT good coding.
+                            #       If you have a better idea, please submit a pull request.
+  if [[ "$(gcc --version)" != *$VERSION_STRING* ]]; then
     echo "Requested version of gcc not active."
     echo "Installing appropriate devtoolset if not installed..."
     if ! isinstalled devtoolset-$GCC_V; then
@@ -113,109 +123,133 @@ function check_pkgs {
 
 ### BENCHMARKING
 function setup {
-  rm -rf benchmarks  # if there is a directory here already, we want it gone.
-  mkdir benchmarks
-  cp -r zynq-benchmark/benchmark_scripts benchmarks  # copy running dir into benchmarks
-  cp -r zynq-benchmark/benchmark_src benchmarks  # copy benchmarks src dir into benchmarks
-  cd benchmarks
+  echo "Creating directory $1..."
+  mkdir -p $1
+  echo "Attempting to update Coremark source..."
+  if [ $DOWNLOAD_SOURCE == "1" ] ; then
+    GIT_FAIL_MSSG="Failed to download Coremark source from GitHub."
+    COREMARK_SRC_MSSG="If the source code is present in $SRC_DIR/coremark, run this script again with the --no-download flag to attempt to run Coremark anyway."
+    git submodule update --init || echo $GIT_FAIL_MSSG $COREMARK_SRC_MSSG
+  fi
 }
 
 # Record CPU and memory usage
 function log_hw {
-  echo "1" >> benchmark_active.txt
+  echo "1" >> $2/benchmark_active.txt
   #echo "%CPU %MEM $(date)" >> ps.txt
-  while [ $(tail -n 1 benchmark_active.txt) == "1" ]
+  while [ $(tail -n 1 $2/benchmark_active.txt) == "1" ]
   do
-    ps -o pcpu= -C $1 >> ps.txt
+    ps -o pcpu= -C $1 >> $2/ps.txt
     sleep 2
   done
 }
 
 function run_coremark {
+
   ## COREMARK
-  echo "Running Coremark benchmarks."
-  rm -rf coremark  # if there is a directory here already, we want it gone.
-  git clone https://github.com/eembc/coremark
-  cd coremark
-  mv ../benchmark_scripts/coremark/run_coremark.sh run_coremark.sh
+  echo "Running Coremark..."
 
   # if non-arm architecture, remove arm compiler flags from run file
+  arm="-march=armv7-a -mcpu=cortex-a9 -mfpu=neon-fp16 -march=armv7-a"
   if [ $ARCH != arm* ]; then
-    sed -i 's/-march=armv7-a -mcpu=cortex-a9 -mfpu=neon-fp16 -march=armv7-a //' run_coremark.sh
+    arm=""
   fi
+
+  args="XCFLAGS=\"-O3 -DMULTITHREAD=${THREADS} -DUSE_PTHREAD -lpthread -lrt ${arm}\""
 
   # Run coremark
-  log_hw "coremark.exe" &
-  sh run_coremark.sh
-  echo "0" >> benchmark_active.txt
+  log_hw "coremark.exe" "$1" &
+  for n in {1..10}
+  do
+      make -C $SRC_DIR/coremark clean
+      make -C $SRC_DIR/coremark $args
+      echo "Run #$n: $(tail -n 1 $SRC_DIR/coremark/run1.log)"
+      tail -n 1 $SRC_DIR/coremark/run1.log >> $1/coremark.txt
+  done
 
-  # Process results.txt
-  if [ $PROCESS_RESULTS != "0" ]; then
-    mv ../benchmark_scripts/coremark/process_coremark.py process_coremark.py
-    python3 process_coremark.py >> results_summary.txt
-  fi
+  # clean up
+  echo "Cleaning Coremark source..."
+  make -C $SRC_DIR/coremark clean
 
-  cd ..
+  echo "0" >> $1/benchmark_active.txt
 }
 
 function run_dhrystone {
   ## DHRYSTONE
-  echo "Running Dhrystone benchmarks."
-  rm -rf dhrystone  # if there is a directory here already, we want it gone.
-  mv benchmark_src/dhrystone/ .  # get predownloaded dhrystone source
-  cd dhrystone
+  echo "Running Dhrystone benchmarks..."
 
-  # Edit Makefile
-  sed -i 's/#TIME_FUNC=     -DTIME/TIME_FUNC=     -DTIME/' Makefile  # uncomment this line...
-  sed -i 's/TIME_FUNC=     -DTIMES/#TIME_FUNC=     -DTIMES/' Makefile  # ...comment out this line.
-  # add compiler flags
+  echo "Cleaning Dhrystone source..."
+  make -C $SRC_DIR/dhrystone clean
+
+  # Set Makefile variables.
+  TIME_FUNC="-DTIME" # Might need to be "-DTIME" instead, depending on the system.
   if [ $ARCH == "arm" ]; then
-    sed -i 's/GCCOPTIM=       -O/GCCOPTIM=       -O -O3 -Ofast --mcpu=cortex-a9 -mfpu=vfpv3-fp16/' Makefile
+    GCCOPTIM="-O -O3 -Ofast --mcpu=cortex-a9 -mfpu=vfpv3-fp16"
   else
-    sed -i 's/GCCOPTIM=       -O/GCCOPTIM=       -O -O3 -Ofast/' Makefile
+    GCCOPTIM="-O -O3 -Ofast"
   fi
 
-  # Make and run
-  make
-  mv ../benchmark_scripts/dhrystone/run_dhrystone.sh run_dhrystone.sh
-  log_hw "gcc_dry2reg" &
-  sh run_dhrystone.sh
-  echo "0" >> benchmark_active.txt
+  echo "Compiling Dhrystone..."
+  make -C $SRC_DIR/dhrystone TIME_FUNC="$TIME_FUNC" GCCOPTIM="$GCCOPTIM" all
 
-  # Process results.txt
-  if [ $PROCESS_RESULTS != "0" ]; then
-    mv ../benchmark_scripts/dhrystone/process_dhrystone.py process_dhrystone.py
-    python3 process_dhrystone.py >> results_summary.txt
-  fi
+  log_hw "gcc_dry2reg" "$1" &
 
-  cd ..
+  RUNS=10
+  ITERS=100000000
+  echo "Running Dhrystone, no registers..."
+  for i in $( seq 1 $RUNS )
+  do
+    printf "run #$i: "
+    echo $ITERS | $SRC_DIR/dhrystone/gcc_dry2 | tail -n 2 | head -n 1 | tee -a $1/dhrystone.txt
+  done
+
+  echo "Running Dhrystone with registers..."
+  for i in $( seq 1 $RUNS )
+  do
+    printf "run #$i: "
+    echo $ITERS | $SRC_DIR/dhrystone/gcc_dry2reg | tail -n 2 | head -n 1 | tee -a $1/dhrystone.txt
+  done
+
+  echo "Cleaning Dhrystone source..."
+  make -C $SRC_DIR/dhrystone clean
+
+  echo "0" >> $1/benchmark_active.txt
 }
 
 function run_whetstone {
-  ## WHETSTONE
-  echo "Running Whetstone benchmarks."
-  rm -rf whetstone  # if there is a directory here already, we want it gone.
-  mv benchmark_src/whetstone/ .  # get predownloaded whetstone source
-  cd whetstone
+  echo "Running Whetstone benchmarks..."
 
-  # Make and then run whetstone
+  # Set compiler flags
   if [ $ARCH == "arm" ]; then
-    gcc whetstone.c -O3 -Ofast --mcpu=cortex-a9 -mfpu=vfpv3-fp16 -DNDEBUG -lm -o whetstone
+    CFLAGS="-O3 -Ofast --mcpu=cortex-a9 -mfpu=vfpv3-fp16 -DNDEBUG -lm"
   else
-    gcc whetstone.c -O3 -Ofast -lm -o whetstone
-  fi
-  mv ../benchmark_scripts/whetstone/run_whetstone.sh run_whetstone.sh
-  log_hw "whetstone" &
-  sh run_whetstone.sh
-  echo "0" >> benchmark_active.txt
-
-  # Process results.txt
-  if [ $PROCESS_RESULTS != "0" ]; then
-    mv ../benchmark_scripts/whetstone/process_whetstone.py process_whetstone.py
-    python3 process_whetstone.py >> results_summary.txt
+    CFLAGS="-O3 -Ofast -lm"
   fi
 
-  cd ..
+  echo "Compiling Whetstone..."
+  make -C $SRC_DIR/whetstone CFLAGS="$CFLAGS" whetstone
+
+  log_hw "whetstone" "$1" &
+  LOOPS=1000000
+  for n in {1..10}
+  do
+    printf "Run #$n: "
+    $SRC_DIR/whetstone/whetstone $LOOPS | tail -n 1 | tee -a $1/whetstone.txt
+  done
+
+  echo "Cleaning Whetstone source directory..."
+  make -C $SRC_DIR/whetstone clean
+
+  echo "0" >> $1/benchmark_active.txt
+
+}
+
+function process_results {
+  echo "Processing results.txt files using python3..."
+
+  python3 $SCRIPTS_DIR/process_results.py coremark $1/coremark.txt | tee $1/results_summary.txt
+  python3 $SCRIPTS_DIR/process_results.py dhrystone $1/dhrystone.txt | tee -a $1/results_summary.txt
+  python3 $SCRIPTS_DIR/process_results.py whetstone $1/whetstone.txt | tee -a $1/results_summary.txt
 }
 
 function run_iperf {
@@ -260,9 +294,9 @@ function run_ping {
 }
 
 function main {
-  if [ $# -eq 0 ]; then
-    usage 1
-  fi
+  # if [ $# -eq 0 ]; then
+  #   usage 1
+  # fi
 
   while [ $# -gt 0 ]; do
     case $1 in
@@ -274,10 +308,16 @@ function main {
         GCC="$1"
         ;;
       -p|--process-results)
-        PROCESS_RESULTS=1
+        PROCESS_RESULTS="1"
         ;;
       -d|--dry-run)
-        DRY_RUN=1
+        DRY_RUN="1"
+        ;;
+      -c|--check-pkgs)
+        CHECK_PACKAGES="1"
+        ;;
+      --no-download)
+        DOWNLOAD_SOURCE="0"
         ;;
       -n|--network-test)
         shift
@@ -290,8 +330,26 @@ function main {
     shift
   done
 
-  check_pkgs
-  setup
+  if [ $CHECK_PACKAGES == "1" ] ; then
+    check_pkgs_yum
+  fi
+
+
+  RESULTS_DIR=$(date +"./${MACHINE_NAME}_results_%Y%m%d_%H%M%S")
+
+  echo $0, $(date +"%Y-%m-%d %H:%M:%S"), selected parameters:
+  echo "THIS_DIRECTORY:           $THIS_DIR"
+  echo "SRC_DIRECTORY:            $SRC_DIR"
+  echo "SCRIPTS_DIRECTORY:        $SCRIPTS_DIR"
+  echo "RESULTS DIRECTORY:        $RESULTS_DIR"
+  echo "CHECK_PACKAGES:           $CHECK_PACKAGES"
+  echo "GCC_VERSION:              $GCC_V"
+  echo "PROCESS_RESULTS:          $PROCESS_RESULTS"
+  echo "DOWNLOAD_COREMARK_SOURCE: $DOWNLOAD_SOURCE"
+  echo "DRY_RUN:                  $DRY_RUN"
+  echo "THREADS:                  $THREADS"
+
+  setup $RESULTS_DIR
 
   if [ $DRY_RUN -eq 0 ] ; then
     run_coremark
@@ -302,11 +360,16 @@ function main {
       run_iperf
       run_ping
     fi
+
+    # Process results.txt
+    if [ $PROCESS_RESULTS != "0" ]; then
+      process_results
+    fi
+
   fi
 
   echo
-  echo "If no errors occurred, find the results inside of results.txt and results_summary.txt in each folder. CPU and memory usage are in ps.log in each folder. Note that CPU usage is computed as the percentage of CPU time used over the lifetime of the process."
-  echo "Exiting program."
+  echo "Benchmarking process complete! The run results have been stored in $RESULTS_DIR."
   echo
 }
 

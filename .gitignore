@@ -1,0 +1,3 @@
+benchmark_src/dhrystone/cc_dry*
+benchmark_src/dhrystone/gcc_dry*
+*_results_*/
