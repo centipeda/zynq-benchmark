@@ -1,15 +1,11 @@
 #!/bin/bash
+
 # RUN-BENCHMARKS.sh
 #
 # Runs benchmarks from https://github.com/centipeda/zynq-benchmark.git on a machine.
 # Follows the procedure specified in https://github.com/centipeda/zynq-benchmark/blob/master/RunningBenchmarks.md.
 # Unfortunately, you'll have to put the results into SubmittingReuslts.md yourself!
 # This assumes that you have root access on this machine.
-
-
-### THINGS THAT NEED WORK:
-# - Generalization to non-x86 architectures and testing on them
-# - Generalize script to support other versions of gcc (and testing!)
 
 
 ### CONSTANTS
@@ -38,6 +34,7 @@ Usage: [sudo] $0
 
 Runs benchmarks from https://github.com/centipeda/zynq-benchmark.git.
 Follows the procedure specified in https://github.com/centipeda/zynq-benchmark/blob/master/RunningBenchmarks.md.
+This script assumes that you have root access on the machine you run this on.
 
 Arguments:
 -h, --help                    Display this message.
@@ -244,14 +241,6 @@ function run_whetstone {
 
 }
 
-function process_results {
-  echo "Processing results.txt files using python3..."
-
-  python3 $SCRIPTS_DIR/process_results.py coremark $1/coremark.txt | tee $1/results_summary.txt
-  python3 $SCRIPTS_DIR/process_results.py dhrystone $1/dhrystone.txt | tee -a $1/results_summary.txt
-  python3 $SCRIPTS_DIR/process_results.py whetstone $1/whetstone.txt | tee -a $1/results_summary.txt
-}
-
 function run_iperf {
   echo "Running iperf tests with remote IP address $REMOTE_IP"
   mkdir iperf
@@ -291,6 +280,17 @@ function run_ping {
   ping -c $NUM_PINGS -s $PACKET_SIZE $REMOTE_IP >> ping_results.txt
 
   cd ..
+}
+
+function process_results {
+  echo "Processing results.txt files using python3..."
+
+  python3 $SCRIPTS_DIR/process_results.py coremark $1/coremark.txt | tee $1/results_summary.txt
+  python3 $SCRIPTS_DIR/process_results.py dhrystone $1/dhrystone.txt | tee -a $1/results_summary.txt
+  python3 $SCRIPTS_DIR/process_results.py whetstone $1/whetstone.txt | tee -a $1/results_summary.txt
+
+  # TODO iperf and ping processing go here!
+
 }
 
 function main {
