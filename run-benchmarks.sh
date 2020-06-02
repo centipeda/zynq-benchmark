@@ -100,7 +100,7 @@ function check_pkgs_yum {
   echo "Installing git if not installed..."
   if ! isinstalled git; then
     echo "Not installed. Installing now."
-    yum -y install git;  # -y means answer yes to confirmations
+    yum -y install git;
   else
     echo "Already installed."
   fi
@@ -119,31 +119,46 @@ function check_pkgs_yum {
 }
 
 ### BENCHMARKING
+
+# Sets up directory structure, downloads coremark source if specified
 function setup {
-  echo "Creating directory $1..."
-  mkdir -p $1
+  echo "Creating directory $RESULTS_DIR..."
+  mkdir -p $RESULTS_DIR
   echo "Attempting to update Coremark source..."
   if [ $DOWNLOAD_SOURCE == "1" ] ; then
-    GIT_FAIL_MSSG="Failed to download Coremark source from GitHub."
-    COREMARK_SRC_MSSG="If the source code is present in $SRC_DIR/coremark, run this script again with the --no-download flag to attempt to run Coremark anyway."
-    git submodule update --init || echo $GIT_FAIL_MSSG $COREMARK_SRC_MSSG
+    COREMARK_SRC_FAIL_MSSG="If the source code is present in $SRC_DIR/coremark,
+      run this script again with the --no-download flag to attempt to run Coremark anyway."
+    git submodule update --init || echo $COREMARK_SRC_FAIL_MSSG
   fi
+  echo "Done."
 }
 
-# Record CPU and memory usage
+# Record CPU and memory usage into the file ps.txt every $WAIT_TIME
+# seconds until a "0" is written to benchmkark_active.txt.
+# Args: a string identifying a ps process
 function log_hw {
-  echo "1" >> $2/benchmark_active.txt
-  #echo "%CPU %MEM $(date)" >> ps.txt
-  while [ $(tail -n 1 $2/benchmark_active.txt) == "1" ]
+
+  echo "1" >> $RESULTS_DIR/benchmark_active.txt
+
+  WAIT_TIME=2
+  while [ $(tail -n 1 $RESULTS_DIR/benchmark_active.txt) == "1" ]
   do
-    ps -o pcpu= -C $1 >> $2/ps.txt
-    sleep 2
+    ps -C $1 -o %cpu,%mem >> $RESULTS_DIR/ps.txt  # Note that this assumes linux ps
+    sleep $WAIT_TIME
   done
+
 }
 
+# Stops logging CPU and memory usage by reading a zero into the file
+# benchmark_active.txt.
+function stop_log_hw {
+  echo "0" >> $RESULTS_DIR/benchmark_active.txt
+}
+
+# Runs coremark benchmarking tests on this machine.
+# Stores results in RESULTS_DIR.
 function run_coremark {
 
-  ## COREMARK
   echo "Running Coremark..."
 
   # if non-arm architecture, remove arm compiler flags from run file
@@ -152,27 +167,29 @@ function run_coremark {
     arm=""
   fi
 
-  args="XCFLAGS=\"-O3 -DMULTITHREAD=${THREADS} -DUSE_PTHREAD -lpthread -lrt ${arm}\""
+  XCFLAGS="-O3 -DMULTITHREAD=${THREADS} -DUSE_PTHREAD -lpthread -lrt ${arm}"
+  echo $XCFLAGS
 
   # Run coremark
-  log_hw "coremark.exe" "$1" &
+  log_hw "coremark.exe" "$RESULTS_DIR" &
   for n in {1..10}
   do
       make -C $SRC_DIR/coremark clean
-      make -C $SRC_DIR/coremark $args
+      make -C $SRC_DIR/coremark XCFLAGS=$XCFLAGS
       echo "Run #$n: $(tail -n 1 $SRC_DIR/coremark/run1.log)"
-      tail -n 1 $SRC_DIR/coremark/run1.log >> $1/coremark.txt
+      tail -n 1 $SRC_DIR/coremark/run1.log >> $RESULTS_DIR/coremark.txt
   done
 
   # clean up
   echo "Cleaning Coremark source..."
   make -C $SRC_DIR/coremark clean
 
-  echo "0" >> $1/benchmark_active.txt
+  stop_log_hw
 }
 
+# Run dhrystone benchmarking tests on this machine.
+# Stores results in RESULTS_DIR.
 function run_dhrystone {
-  ## DHRYSTONE
   echo "Running Dhrystone benchmarks..."
 
   echo "Cleaning Dhrystone source..."
@@ -189,7 +206,7 @@ function run_dhrystone {
   echo "Compiling Dhrystone..."
   make -C $SRC_DIR/dhrystone TIME_FUNC="$TIME_FUNC" GCCOPTIM="$GCCOPTIM" all
 
-  log_hw "gcc_dry2reg" "$1" &
+  log_hw "gcc_dry2reg" "$RESULTS_DIR" &
 
   RUNS=10
   ITERS=100000000
@@ -197,22 +214,24 @@ function run_dhrystone {
   for i in $( seq 1 $RUNS )
   do
     printf "run #$i: "
-    echo $ITERS | $SRC_DIR/dhrystone/gcc_dry2 | tail -n 2 | head -n 1 | tee -a $1/dhrystone.txt
+    echo $ITERS | $SRC_DIR/dhrystone/gcc_dry2 | tail -n 2 | head -n 1 | tee -a $RESULTS_DIR/dhrystone.txt
   done
 
   echo "Running Dhrystone with registers..."
   for i in $( seq 1 $RUNS )
   do
     printf "run #$i: "
-    echo $ITERS | $SRC_DIR/dhrystone/gcc_dry2reg | tail -n 2 | head -n 1 | tee -a $1/dhrystone.txt
+    echo $ITERS | $SRC_DIR/dhrystone/gcc_dry2reg | tail -n 2 | head -n 1 | tee -a $RESULTS_DIR/dhrystone.txt
   done
 
   echo "Cleaning Dhrystone source..."
   make -C $SRC_DIR/dhrystone clean
 
-  echo "0" >> $1/benchmark_active.txt
+  stop_log_hw
 }
 
+# Run whetstone benchmarking tests on this machine.
+# Stores results in RESULTS_DIR.
 function run_whetstone {
   echo "Running Whetstone benchmarks..."
 
@@ -226,23 +245,23 @@ function run_whetstone {
   echo "Compiling Whetstone..."
   make -C $SRC_DIR/whetstone CFLAGS="$CFLAGS" whetstone
 
-  log_hw "whetstone" "$1" &
+  log_hw "whetstone" "$RESULTS_DIR" &
   LOOPS=1000000
   for n in {1..10}
   do
     printf "Run #$n: "
-    $SRC_DIR/whetstone/whetstone $LOOPS | tail -n 1 | tee -a $1/whetstone.txt
+    $SRC_DIR/whetstone/whetstone $LOOPS | tail -n 1 | tee -a $RESULTS_DIR/whetstone.txt
   done
 
   echo "Cleaning Whetstone source directory..."
   make -C $SRC_DIR/whetstone clean
 
-  echo "0" >> $1/benchmark_active.txt
-
+  stop_log_hw
 }
 
+# Runs network tests using iperf with some remote ip.
 function run_iperf {
-  echo "Running iperf tests with remote IP address $REMOTE_IP"
+  echo "Running iperf tests with remote IP address $REMOTE_IP..."
   mkdir iperf
   cd iperf
 
@@ -267,8 +286,9 @@ function run_iperf {
   cd ..
 }
 
+# Runs latency tests using ping with some remote ip.
 function run_ping {
-  echo "Testing latency using ping with remote IP address $REMOTE_IP"
+  echo "Testing latency using ping with remote IP address $REMOTE_IP..."
   mkdir ping
   cd ping
 
@@ -282,12 +302,13 @@ function run_ping {
   cd ..
 }
 
+# Processes results stored in text file in RESULTS_DIR.
 function process_results {
   echo "Processing results.txt files using python3..."
 
-  python3 $SCRIPTS_DIR/process_results.py coremark $1/coremark.txt | tee $1/results_summary.txt
-  python3 $SCRIPTS_DIR/process_results.py dhrystone $1/dhrystone.txt | tee -a $1/results_summary.txt
-  python3 $SCRIPTS_DIR/process_results.py whetstone $1/whetstone.txt | tee -a $1/results_summary.txt
+  python3 $SCRIPTS_DIR/process_results.py coremark $RESULTS_DIR/coremark.txt | tee $RESULTS_DIR/results_summary.txt
+  python3 $SCRIPTS_DIR/process_results.py dhrystone $RESULTS_DIR/dhrystone.txt | tee -a $RESULTS_DIR/results_summary.txt
+  python3 $SCRIPTS_DIR/process_results.py whetstone $RESULTS_DIR/whetstone.txt | tee -a $RESULTS_DIR/results_summary.txt
 
   # TODO iperf and ping processing go here!
 
@@ -341,7 +362,7 @@ function main {
   echo "THIS_DIRECTORY:           $THIS_DIR"
   echo "SRC_DIRECTORY:            $SRC_DIR"
   echo "SCRIPTS_DIRECTORY:        $SCRIPTS_DIR"
-  echo "RESULTS DIRECTORY:        $RESULTS_DIR"
+  echo "RESULTS_DIRECTORY:        $RESULTS_DIR"
   echo "CHECK_PACKAGES:           $CHECK_PACKAGES"
   echo "GCC_VERSION:              $GCC_V"
   echo "PROCESS_RESULTS:          $PROCESS_RESULTS"
@@ -351,26 +372,28 @@ function main {
 
   setup $RESULTS_DIR
 
-  if [ $DRY_RUN -eq 0 ] ; then
+  if [ "$DRY_RUN" -eq "0" ] ; then
     run_coremark
     run_dhrystone
     run_whetstone
 
-    if [ $REMOTE_IP != "0" ]; then
+    if [ "$REMOTE_IP" -ne "0" ]; then
       run_iperf
       run_ping
     fi
 
-    # Process results.txt
-    if [ $PROCESS_RESULTS != "0" ]; then
+    # Process results.txt files
+    if [ "$PROCESS_RESULTS" -ne "0" ]; then
       process_results
     fi
 
+    echo
+    echo "Benchmarking process complete! The run results have been stored in $RESULTS_DIR."
+
   fi
 
-  echo
-  echo "Benchmarking process complete! The run results have been stored in $RESULTS_DIR."
-  echo
+  echo "Exiting program."
+
 }
 
 main $@
