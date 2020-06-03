@@ -10,9 +10,9 @@
 
 ### CONSTANTS
 
-THIS_DIR="$(pwd)"
-SRC_DIR="./benchmark_src"
-SCRIPTS_DIR="./benchmark_scripts"
+THIS_DIR="$(dirname $0)"
+SRC_DIR="$THIS_DIR/benchmark_src"
+SCRIPTS_DIR="$THIS_DIR/benchmark_scripts"
 DOWNLOAD_SOURCE="1"
 MACHINE_NAME="$(hostname)"
 CHECK_PACKAGES="0"
@@ -122,6 +122,7 @@ function check_pkgs_yum {
 
 # Sets up directory structure, downloads coremark source if specified
 function setup {
+
   echo "Creating directory $RESULTS_DIR..."
   mkdir -p $RESULTS_DIR
   echo "Attempting to update Coremark source..."
@@ -130,7 +131,8 @@ function setup {
       run this script again with the --no-download flag to attempt to run Coremark anyway."
     git submodule update --init || echo $COREMARK_SRC_FAIL_MSSG
   fi
-  echo "Done."
+  echo "Completed setup."
+
 }
 
 # Record CPU and memory usage into the file ps.txt every $WAIT_TIME
@@ -167,17 +169,19 @@ function run_coremark {
     arm=""
   fi
 
-  XCFLAGS="-O3 -DMULTITHREAD=${THREADS} -DUSE_PTHREAD -lpthread -lrt ${arm}"
+  XCFLAGS="-O3 -DMULTITHREAD=${THREADS} -DUSE_PTHREAD -pthread -lrt ${arm}"
   echo $XCFLAGS
 
   # Run coremark
   log_hw "coremark.exe" "$RESULTS_DIR" &
   for n in {1..10}
   do
+      echo "Now starting run $n:"
       make -C $SRC_DIR/coremark clean
-      make -C $SRC_DIR/coremark XCFLAGS=$XCFLAGS
+      make -C $SRC_DIR/coremark XCFLAGS="$XCFLAGS"
       echo "Run #$n: $(tail -n 1 $SRC_DIR/coremark/run1.log)"
       tail -n 1 $SRC_DIR/coremark/run1.log >> $RESULTS_DIR/coremark.txt
+      echo "Finished with run $n."
   done
 
   # clean up
@@ -356,7 +360,7 @@ function main {
   fi
 
 
-  RESULTS_DIR=$(date +"./${MACHINE_NAME}_results_%Y%m%d_%H%M%S")
+  RESULTS_DIR=$(date +"$THIS_DIR/${MACHINE_NAME}_results_%Y%m%d_%H%M%S")
 
   echo $0, $(date +"%Y-%m-%d %H:%M:%S"), selected parameters:
   echo "THIS_DIRECTORY:           $THIS_DIR"
