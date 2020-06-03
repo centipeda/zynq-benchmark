@@ -18,10 +18,10 @@ cpu_remote_err = []
 loss_err = []
 
 
-frame_size = np.arange(1500,65501,sys.argv[2])
+frame_size = np.arange(1500,65501,2000)
 
 for fs in frame_size:
-    filename = "iperf_result_" + str(fs) + ".json"
+    filename = "../iperf/iperf_result_" + str(fs) + ".json"
     with open(filename) as f:
         f_read = f.read()
         if f_read[0] != "[":
