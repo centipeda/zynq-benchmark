@@ -314,7 +314,9 @@ function process_results {
   python3 $SCRIPTS_DIR/process_results.py dhrystone $RESULTS_DIR/dhrystone.txt | tee -a $RESULTS_DIR/results_summary.txt
   python3 $SCRIPTS_DIR/process_results.py whetstone $RESULTS_DIR/whetstone.txt | tee -a $RESULTS_DIR/results_summary.txt
 
-  # TODO iperf and ping processing go here!
+  if [ "$REMOTE_IP" -ne "0" ]; then
+      python3 $SCRIPTS_DIR/process_iperf.py | tee -a $RESULTS_DIR/results_summary.txt
+  fi
 
 }
 
