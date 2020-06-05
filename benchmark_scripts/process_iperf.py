@@ -4,6 +4,7 @@ import numpy as np
 import json
 import statistics as stats
 import matplotlib.pyplot as plt
+from sys import argv
 
 # empty lists for the results
 bps = []
@@ -19,10 +20,13 @@ loss_err = []
 
 
 frame_size = np.arange(1500,65501,2000)
+iperf_dir = argv[1]
+iperf_plot_dir = "{}/plots".format(iperf_dir)
 
 for fs in frame_size:
-    filename = "../iperf/iperf_result_" + str(fs) + ".json"
-    with open(filename) as f:
+    filename = "{}/iperf_result_{}.json".format(iperf_dir, str(fs))
+    print(filename)
+    with open(filename, "r") as f:
         f_read = f.read()
         if f_read[0] != "[":
             f_read = "[" + f_read[:-2] + "]"
@@ -55,32 +59,33 @@ ax.errorbar(frame_size,bps,bps_err,fmt="ro")
 ax.set_xlabel("UDP Packet Size (B)")
 ax.set_ylabel("Throughput (Mb/s)")
 ax.set_title("UDP: Throughput vs. Packet Size")
-plt.savefig("../iperf/bps.png")
+plt.savefig("{}/bps.png".format(iperf_dir))
 
 fig, ax = plt.subplots()
 ax.errorbar(frame_size,loss,loss_err,fmt="ro")
 ax.set_xlabel("UDP Packet Size (B)")
 ax.set_ylabel("Loss (%)")
 ax.set_title("UDP: Packet Loss vs. Packet Size")
-plt.savefig("../iperf/loss.png")
+plt.savefig("{}/loss.png".format(iperf_dir))
 
 fig, ax = plt.subplots()
 ax.errorbar(frame_size,jitter,jitter_err,fmt="ro")
 ax.set_xlabel("UDP Packet Size (B)")
 ax.set_ylabel("Jitter (ms)")
 ax.set_title("UDP: Jitter vs. Packet Size")
-plt.savefig("../iperf/jitter.png")
+plt.savefig("{}/jitter.png".format(iperf_dir))
 
 fig, ax = plt.subplots()
 ax.errorbar(frame_size,cpu_host,cpu_host_err,fmt="ro")
 ax.set_xlabel("UDP Packet Size (B)")
 ax.set_ylabel("CPU Sender (%)")
 ax.set_title("UDP: Sender CPU Usage vs. Packet Size")
-plt.savefig("../iperf/cpu_host.png")
+plt.savefig("{}/cpu_host.png".format(iperf_dir))
 
 fig, ax = plt.subplots()
 ax.errorbar(frame_size,cpu_remote,cpu_remote_err,fmt="ro")
 ax.set_xlabel("UDP Packet Size (B)")
 ax.set_ylabel("CPU Receiver (%)")
 ax.set_title("UDP: Receiver CPU Usage vs. Packet Size")
-plt.savefig("../iperf/cpu_remote.png")
+plt.savefig("{}/cpu_remote.png".format(iperf_dir))
+

@@ -17,8 +17,8 @@ DOWNLOAD_SOURCE="1"
 MACHINE_NAME="$(hostname)"
 CHECK_PACKAGES="0"
 ARCH=$(uname -m)  # get this machine's architecture
-GCC_V=6  # The version of gcc you intend to use
-PROCESS_RESULTS="1"  # If you want to perform statistical analysis on benchmarking results
+RUN_NETWORK="0"  # by default, don't run networking tests with iperf and ping
+PROCESS_RESULTS="1"  # by default, perform statistical analysis on benchmarking results using python3
 DRY_RUN="0"
 
 # Automatically detect number of threads
@@ -39,11 +39,9 @@ This script assumes that you have root access on the machine you run this on.
 Arguments:
 -h, --help                    Display this message.
 
--g, --gcc <version>           Specify the version of devtoolset you want to use. The gcc within will
-                              be used at all places in the benchmarking process needed.
-
--p, --process-results         Perform basic statistical analysis on benchmark scores
-                              (mean, std. deviation). Python 3 will be installed if it isn't already.
+-r, --just-raw-data           By default, this script performs basic statistical analysis on benchmark scores
+                              (mean, std. deviation), installing Python 3 if it isn't already. This option
+                              disables both of those.
 
 -c, --check-pkgs              Checks if the required packages are installed using the yum package manager.
 
@@ -65,6 +63,8 @@ exit $1
 
 ### SETUP
 
+# TODO: expand this beyond yum.
+
 # Grabbed from https://unix.stackexchange.com/questions/122681/how-can-i-tell-whether-a-package-is-installed-via-yum-in-a-bash-script
 function isinstalled {
   if yum list installed "$@" >/dev/null 2>&1; then
@@ -74,26 +74,9 @@ function isinstalled {
   fi
 }
 
-# Install and enable appropriate gcc
+# Install and enable git, python3 (if appropriate), and iperf3
+#
 function check_pkgs_yum {
-
-  echo "Activating correct version of gcc if not already active..."
-  VERSION_STRING=" $GCC_V"  #FIXME: "is there a string in the gcc version output that starts with this number" is NOT good coding.
-                            #       If you have a better idea, please submit a pull request.
-  if [[ "$(gcc --version)" != *$VERSION_STRING* ]]; then
-    echo "Requested version of gcc not active."
-    echo "Installing appropriate devtoolset if not installed..."
-    if ! isinstalled devtoolset-$GCC_V; then
-      printf "Not installed. Installing now."
-      yum -y install devtoolset-$GCC_V;  # This takes a while...
-    else
-      printf "Already installed."
-    fi
-
-    echo "Enabling devtoolset. This requires interrupting this program. Please run this file again."
-    scl enable devtoolset-$GCC_V bash
-    exit
-  fi
 
   # Get git setup set up
   echo
@@ -106,12 +89,23 @@ function check_pkgs_yum {
   fi
   git clone https://github.com/centipeda/zynq-benchmark.git
 
-  # Install Python 3 if you will also be processing the benchmarking the reuslts on the system (this is easier)
+  # Install Python 3 to process the benchmarking the reuslts on the system (this is easier)
   if [ $PROCESS_RESULTS ]; then
     echo "Installing python3 if not installed..."
     if ! isinstalled python3; then
       echo "Not installed. Installing now."
       yum -y install python3;
+    else
+      echo "Already installed."
+    fi
+  fi
+
+  # Install iperf 3 to run networking tests
+  if [ $PROCESS_RESULTS ]; then
+    echo "Installing iperf3 if not installed..."
+    if ! isinstalled iperf3; then
+      echo "Not installed. Installing now."
+      yum -y install iperf3;
     else
       echo "Already installed."
     fi
@@ -160,7 +154,6 @@ function stop_log_hw {
 # Runs coremark benchmarking tests on this machine.
 # Stores results in RESULTS_DIR.
 function run_coremark {
-
   echo "Running Coremark..."
 
   # if non-arm architecture, remove arm compiler flags from run file
@@ -194,7 +187,7 @@ function run_coremark {
 # Run dhrystone benchmarking tests on this machine.
 # Stores results in RESULTS_DIR.
 function run_dhrystone {
-  echo "Running Dhrystone benchmarks..."
+  echo "Running Dhrystone..."
 
   echo "Cleaning Dhrystone source..."
   make -C $SRC_DIR/dhrystone clean
@@ -237,7 +230,7 @@ function run_dhrystone {
 # Run whetstone benchmarking tests on this machine.
 # Stores results in RESULTS_DIR.
 function run_whetstone {
-  echo "Running Whetstone benchmarks..."
+  echo "Running Whetstone..."
 
   # Set compiler flags
   if [ $ARCH == "arm" ]; then
@@ -265,9 +258,9 @@ function run_whetstone {
 
 # Runs network tests using iperf with some remote ip.
 function run_iperf {
-  echo "Running iperf tests with remote IP address $REMOTE_IP..."
-  mkdir iperf
-  cd iperf
+  echo "Testing network with iperf with remote IP address $REMOTE_IP..."
+
+  mkdir $RESULTS_DIR/iperf
 
   # UDP datagram size in bytes
   frame_size=1500
@@ -275,35 +268,34 @@ function run_iperf {
 
   while [ $frame_size -lt 65508 ]
   do
-    echo "[" >> iperf_result_${frame_size}.json
+    echo "[" >> $RESULTS_DIR/iperf/iperf_result_${frame_size}.json
     i=0
     while [ $i -lt 10 ]
     do
       # -b sets maximum bitrate in b/s (default is 1Mb/s); -Z uses "zero copy" to save CPU; man iperf3 for more
-      iperf3 -c $REMOTE_IP -u -b 1000000000 -l $frame_size -J -Z >> iperf_result_${frame_size}.json
-      echo "," >> iperf_result_${frame_size}.json
+      iperf3 -c $REMOTE_IP -u -b 1000000000 -l $frame_size -J -Z >> $RESULTS_DIR/iperf/iperf_result_${frame_size}.json
+      echo "," >> $RESULTS_DIR/iperf/iperf_result_${frame_size}.json
       i=$((i+1))
     done
-    echo "]" >> iperf_result_${frame_size}.json
+    echo "]" >> $RESULTS_DIR/iperf/iperf_result_${frame_size}.json
     frame_size=$((frame_size+step_size))
   done
-  cd ..
+
 }
 
 # Runs latency tests using ping with some remote ip.
 function run_ping {
   echo "Testing latency using ping with remote IP address $REMOTE_IP..."
-  mkdir ping
-  cd ping
+
+  mkdir $RESULTS_DIR/ping
 
   # So far, these are all ping defaults spelled out for configurability's sake
   PACKET_SIZE=56  # bytes
   NUM_PINGS=10  # number of times to ping server
 
   # No processing - ping is nice enough to do that for us
-  ping -c $NUM_PINGS -s $PACKET_SIZE $REMOTE_IP >> ping_results.txt
+  ping -c $NUM_PINGS -s $PACKET_SIZE $REMOTE_IP >> $RESULTS_DIR/ping/ping_results.txt
 
-  cd ..
 }
 
 # Processes results stored in text file in RESULTS_DIR.
@@ -314,8 +306,9 @@ function process_results {
   python3 $SCRIPTS_DIR/process_results.py dhrystone $RESULTS_DIR/dhrystone.txt | tee -a $RESULTS_DIR/results_summary.txt
   python3 $SCRIPTS_DIR/process_results.py whetstone $RESULTS_DIR/whetstone.txt | tee -a $RESULTS_DIR/results_summary.txt
 
-  if [ "$REMOTE_IP" -ne "0" ]; then
-      python3 $SCRIPTS_DIR/process_iperf.py
+  if [ ! -z "$REMOTE_IP" ]; then
+    python3 $SCRIPTS_DIR/process_iperf.py $RESULTS_DIR/iperf
+    # no need to process ping
   fi
 
 }
@@ -334,8 +327,8 @@ function main {
         shift
         GCC="$1"
         ;;
-      -p|--process-results)
-        PROCESS_RESULTS="1"
+      -r|--just-raw-data)
+        PROCESS_RESULTS="0"
         ;;
       -d|--dry-run)
         DRY_RUN="1"
@@ -348,6 +341,7 @@ function main {
         ;;
       -n|--network-test)
         shift
+        RUN_NETWORK="1"
         REMOTE_IP="$1"
         ;;
       *)
@@ -370,7 +364,7 @@ function main {
   echo "SCRIPTS_DIRECTORY:        $SCRIPTS_DIR"
   echo "RESULTS_DIRECTORY:        $RESULTS_DIR"
   echo "CHECK_PACKAGES:           $CHECK_PACKAGES"
-  echo "GCC_VERSION:              $GCC_V"
+  echo "RUN_NETWORK_TESTS:        $RUN_NETWORK"
   echo "PROCESS_RESULTS:          $PROCESS_RESULTS"
   echo "DOWNLOAD_COREMARK_SOURCE: $DOWNLOAD_SOURCE"
   echo "DRY_RUN:                  $DRY_RUN"
@@ -378,18 +372,22 @@ function main {
 
   setup $RESULTS_DIR
 
-  if [ "$DRY_RUN" -eq "0" ] ; then
+  if [ "$DRY_RUN" -eq "0" ]; then
     run_coremark
     run_dhrystone
     run_whetstone
 
-    if [ "$REMOTE_IP" -ne "0" ]; then
-      run_iperf
-      run_ping
+    if [ "$RUN_NETWORK" -eq "1" ]; then
+      if [ ! -z "$REMOTE_IP" ]; then
+        run_iperf
+        run_ping
+      else
+        echo "REMOTE_IP option for -n not defined."
+      fi
     fi
 
     # Process results.txt files
-    if [ "$PROCESS_RESULTS" -ne "0" ]; then
+    if [ "$PROCESS_RESULTS" != "0" ]; then
       process_results
     fi
 
@@ -403,3 +401,4 @@ function main {
 }
 
 main $@
+
