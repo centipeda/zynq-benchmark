@@ -28,8 +28,9 @@ for fs in frame_size:
     print(filename)
     with open(filename, "r") as f:
         f_read = f.read()
-        if f_read[0] != "[":
-            f_read = "[" + f_read[:-2] + "]"
+        
+        # Slice out the trailing comma
+        f_read = f_read[:-2] + "]"
         data = json.loads(f_read)
         b = []
         ch = []
