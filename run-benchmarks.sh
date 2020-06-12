@@ -18,6 +18,7 @@ MACHINE_NAME="$(hostname)"
 CHECK_PACKAGES="0"
 ARCH=$(uname -m)  # get this machine's architecture
 RUN_NETWORK="0"  # by default, don't run networking tests with iperf and ping
+JUST_RUN_NETWORK="0"  # if true, only run networking tests
 PROCESS_RESULTS="1"  # by default, perform statistical analysis on benchmarking results using python3
 DRY_RUN="0"
 
@@ -47,9 +48,11 @@ Arguments:
 
 -d, --dry-run                 Don't run benchmarks, just check if requisite packages are installed.
 
--n, --network_test [ip addr]  Run iperf3 throughput test and ping latency test. Note the remote machine
+-n, --network-test [ip addr]  Run iperf3 throughput test and ping latency test. Note the remote machine
                               must have the same version of iperf installed and be running in server mode
                               (iperf3 -s).
+
+-j, --just-network [ip addr]  Run iperf3 throughput test and ping latency test and no other benchmarks.
 
 --no-download                 Don't attempt to download the Coremark source code from the Coremark GitHub
                               repository (assumes the code is present.) Will cause the script to fail if the
@@ -302,9 +305,11 @@ function run_ping {
 function process_results {
   echo "Processing results.txt files using python3..."
 
-  python3 $SCRIPTS_DIR/process_results.py coremark $RESULTS_DIR/coremark.txt | tee $RESULTS_DIR/results_summary.txt
-  python3 $SCRIPTS_DIR/process_results.py dhrystone $RESULTS_DIR/dhrystone.txt | tee -a $RESULTS_DIR/results_summary.txt
-  python3 $SCRIPTS_DIR/process_results.py whetstone $RESULTS_DIR/whetstone.txt | tee -a $RESULTS_DIR/results_summary.txt
+  if [ "$JUST_RUN_NETWORK" -eq "0" ]; then
+    python3 $SCRIPTS_DIR/process_results.py coremark $RESULTS_DIR/coremark.txt | tee $RESULTS_DIR/results_summary.txt
+    python3 $SCRIPTS_DIR/process_results.py dhrystone $RESULTS_DIR/dhrystone.txt | tee -a $RESULTS_DIR/results_summary.txt
+    python3 $SCRIPTS_DIR/process_results.py whetstone $RESULTS_DIR/whetstone.txt | tee -a $RESULTS_DIR/results_summary.txt
+  fi
 
   if [ ! -z "$REMOTE_IP" ]; then
     python3 $SCRIPTS_DIR/process_iperf.py $RESULTS_DIR/iperf
@@ -344,6 +349,12 @@ function main {
         RUN_NETWORK="1"
         REMOTE_IP="$1"
         ;;
+      -j|--just-network)
+        shift
+        RUN_NETWORK="1"
+        JUST_RUN_NETWORK="1"
+        REMOTE_IP="$1"
+        ;;
       *)
         MACHINE_NAME="$1"
         ;;
@@ -365,6 +376,7 @@ function main {
   echo "RESULTS_DIRECTORY:        $RESULTS_DIR"
   echo "CHECK_PACKAGES:           $CHECK_PACKAGES"
   echo "RUN_NETWORK_TESTS:        $RUN_NETWORK"
+  echo "JUST_RUN_NETWORK_TESTS:   $JUST_RUN_NETWORK"
   echo "PROCESS_RESULTS:          $PROCESS_RESULTS"
   echo "DOWNLOAD_COREMARK_SOURCE: $DOWNLOAD_SOURCE"
   echo "DRY_RUN:                  $DRY_RUN"
@@ -373,9 +385,12 @@ function main {
   setup $RESULTS_DIR
 
   if [ "$DRY_RUN" -eq "0" ]; then
-    run_coremark
-    run_dhrystone
-    run_whetstone
+
+    if [ "$JUST_RUN_NETWORK" -eq "0" ]; then
+      run_coremark
+      run_dhrystone
+      run_whetstone
+    fi
 
     if [ "$RUN_NETWORK" -eq "1" ]; then
       if [ ! -z "$REMOTE_IP" ]; then
