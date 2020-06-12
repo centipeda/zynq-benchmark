@@ -30,7 +30,7 @@ for fs in frame_size:
         f_read = f.read()
         
         # Slice out the trailing comma
-        f_read = f_read[:-2] + "]"
+        f_read = f_read[:-4] + "]"
         data = json.loads(f_read)
         b = []
         ch = []
