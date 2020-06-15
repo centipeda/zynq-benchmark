@@ -88,6 +88,17 @@ function check_pkgs {
   CHECK_SUCCESS = "1"  # Stays a one until something isn't installed, then turns zero,
                        # which causes the program to exit after check_pkgs
 
+  if [ "$JUST_RUN_NETWORK" == "0" ]; then
+    if ! isinstalled gcc; then
+      echo "To run benchmarks, please install some version of gcc first."
+      CHECK_SUCCESS = 0
+    else
+      echo "This benchmarking suite uses gcc to compile and run benchmarks."
+      echo "Please ensure that you have your preferred version installed - feel free to ctrl-C now to check."
+      echo
+    fi
+  fi
+
   if [ "$DOWNLOAD_SOURCE" != "0" ]; then
     if ! isinstalled git; then
       echo "To download coremark source, please install git first."
