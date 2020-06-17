@@ -4,7 +4,7 @@
 #
 # Runs benchmarks from https://github.com/centipeda/zynq-benchmark.git on a machine.
 # Follows the procedure specified in https://github.com/centipeda/zynq-benchmark/blob/master/RunningBenchmarks.md.
-# Unfortunately, you'll have to put the results into SubmittingReuslts.md yourself!
+# Unfortunately, you'll have to put the results into SubmittingReuslts.md yourself!  # FIXME
 # This assumes that you have root access on this machine.
 
 
@@ -18,6 +18,7 @@ MACHINE_NAME="$(hostname)"
 CHECK_PACKAGES="0"
 ARCH=$(uname -m)  # get this machine's architecture
 RUN_NETWORK="0"  # by default, don't run networking tests with iperf and ping
+JUST_RUN_NETWORK="0"  # if true, only run networking tests
 PROCESS_RESULTS="1"  # by default, perform statistical analysis on benchmarking results using python3
 DRY_RUN="0"
 
@@ -43,13 +44,18 @@ Arguments:
                               (mean, std. deviation), installing Python 3 if it isn't already. This option
                               disables both of those.
 
--c, --check-pkgs              Checks if the required packages are installed using the yum package manager.
+-c, --check-pkgs              Checks if the required commands are installed - git if downloading coremark
+                              source, iperf3 if running networking tests, python3 if processing information.
+                              Will remind the user to install numpy and matplotlib python modules if both
+                              networking and processing flags are selected.
 
 -d, --dry-run                 Don't run benchmarks, just check if requisite packages are installed.
 
--n, --network_test [ip addr]  Run iperf3 throughput test and ping latency test. Note the remote machine
+-n, --network-test [ip addr]  Run iperf3 throughput test and ping latency test. Note the remote machine
                               must have the same version of iperf installed and be running in server mode
                               (iperf3 -s).
+
+-j, --just-network [ip addr]  Run iperf3 throughput test and ping latency test and no other benchmarks.
 
 --no-download                 Don't attempt to download the Coremark source code from the Coremark GitHub
                               repository (assumes the code is present.) Will cause the script to fail if the
@@ -63,53 +69,73 @@ exit $1
 
 ### SETUP
 
-# TODO: expand this beyond yum.
 
-# Grabbed from https://unix.stackexchange.com/questions/122681/how-can-i-tell-whether-a-package-is-installed-via-yum-in-a-bash-script
-function isinstalled {
-  if yum list installed "$@" >/dev/null 2>&1; then
-    true
-  else
-    false
-  fi
-}
 
-# Install and enable git, python3 (if appropriate), and iperf3
-#
-function check_pkgs_yum {
+# Check if git, python3 (if processing), and iperf3 (if network tests) are installed.
+# Aborts the script if not all appropriate packages are installed.
+function check_pkgs {
 
-  # Get git setup set up
-  echo
-  echo "Installing git if not installed..."
-  if ! isinstalled git; then
-    echo "Not installed. Installing now."
-    yum -y install git;
-  else
-    echo "Already installed."
-  fi
-  git clone https://github.com/centipeda/zynq-benchmark.git
-
-  # Install Python 3 to process the benchmarking the reuslts on the system (this is easier)
-  if [ $PROCESS_RESULTS ]; then
-    echo "Installing python3 if not installed..."
-    if ! isinstalled python3; then
-      echo "Not installed. Installing now."
-      yum -y install python3;
+  # Checks if a shell command with the given name exists.
+  # Args: [the command: e.g., git, bash, python3]
+  function isinstalled {
+    if [ $(command -v $1) ]; then
+      true
     else
-      echo "Already installed."
+      false
+    fi
+  }
+
+  CHECK_SUCCESS = "1"  # Stays a one until something isn't installed, then turns zero,
+                       # which causes the program to exit after check_pkgs
+
+  if [ "$JUST_RUN_NETWORK" == "0" ]; then
+    if ! isinstalled gcc; then
+      echo "To run benchmarks, please install some version of gcc first."
+      CHECK_SUCCESS = 0
+    else
+      echo "This benchmarking suite uses gcc to compile and run benchmarks."
+      echo "Please ensure that you have your preferred version installed - feel free to ctrl-C now to check."
+      echo
     fi
   fi
 
-  # Install iperf 3 to run networking tests
-  if [ $PROCESS_RESULTS ]; then
-    echo "Installing iperf3 if not installed..."
+  if [ "$DOWNLOAD_SOURCE" != "0" ]; then
+    if ! isinstalled git; then
+      echo "To download coremark source, please install git first."
+      CHECK_SUCCESS = 0
+    fi
+  fi
+
+  if [ "$RUN_NETWORK" != "0" ]; then
     if ! isinstalled iperf3; then
-      echo "Not installed. Installing now."
-      yum -y install iperf3;
-    else
-      echo "Already installed."
+      echo "To run network tests, please install iperf3 first."
+      CHECK_SUCCESS = 0
     fi
   fi
+
+  if [ "$PROCESS_RESULTS" != "0" ]; then
+    if ! isinstalled python3; then
+      echo "To process results, please install python3 first."
+      CHECK_SUCCESS = 0
+    fi
+    if [ "$RUN_NETWORK" != "0" ]; then
+      echo "To process network benchmarking results, matplotlib and numpy python packages must be installed."
+      echo "This script cannot ascertain the status of installation of these packages."
+      echo "Do you wish to exit the program and install these/check their status, or continue running?"
+      select yn in "Yes" "No"; do
+          case $yn in
+              Yes ) make install; break;;
+              No ) CHECK_SUCCESS = 0;;
+              * ) echo "Please enter 'Yes' or 'No'."
+          esac
+      done
+    fi
+  fi
+
+  if [ "$CHECK_SUCCESS" != "1" ]; then
+    exit 1
+  fi
+
 }
 
 ### BENCHMARKING
@@ -302,9 +328,11 @@ function run_ping {
 function process_results {
   echo "Processing results.txt files using python3..."
 
-  python3 $SCRIPTS_DIR/process_results.py coremark $RESULTS_DIR/coremark.txt | tee $RESULTS_DIR/results_summary.txt
-  python3 $SCRIPTS_DIR/process_results.py dhrystone $RESULTS_DIR/dhrystone.txt | tee -a $RESULTS_DIR/results_summary.txt
-  python3 $SCRIPTS_DIR/process_results.py whetstone $RESULTS_DIR/whetstone.txt | tee -a $RESULTS_DIR/results_summary.txt
+  if [ "$JUST_RUN_NETWORK" -eq "0" ]; then
+    python3 $SCRIPTS_DIR/process_results.py coremark $RESULTS_DIR/coremark.txt | tee $RESULTS_DIR/results_summary.txt
+    python3 $SCRIPTS_DIR/process_results.py dhrystone $RESULTS_DIR/dhrystone.txt | tee -a $RESULTS_DIR/results_summary.txt
+    python3 $SCRIPTS_DIR/process_results.py whetstone $RESULTS_DIR/whetstone.txt | tee -a $RESULTS_DIR/results_summary.txt
+  fi
 
   if [ ! -z "$REMOTE_IP" ]; then
     python3 $SCRIPTS_DIR/process_iperf.py $RESULTS_DIR/iperf
@@ -344,6 +372,12 @@ function main {
         RUN_NETWORK="1"
         REMOTE_IP="$1"
         ;;
+      -j|--just-network)
+        shift
+        RUN_NETWORK="1"
+        JUST_RUN_NETWORK="1"
+        REMOTE_IP="$1"
+        ;;
       *)
         MACHINE_NAME="$1"
         ;;
@@ -352,7 +386,7 @@ function main {
   done
 
   if [ $CHECK_PACKAGES == "1" ] ; then
-    check_pkgs_yum
+    check_pkgs
   fi
 
 
@@ -365,6 +399,7 @@ function main {
   echo "RESULTS_DIRECTORY:        $RESULTS_DIR"
   echo "CHECK_PACKAGES:           $CHECK_PACKAGES"
   echo "RUN_NETWORK_TESTS:        $RUN_NETWORK"
+  echo "JUST_RUN_NETWORK_TESTS:   $JUST_RUN_NETWORK"
   echo "PROCESS_RESULTS:          $PROCESS_RESULTS"
   echo "DOWNLOAD_COREMARK_SOURCE: $DOWNLOAD_SOURCE"
   echo "DRY_RUN:                  $DRY_RUN"
@@ -372,12 +407,15 @@ function main {
 
   setup $RESULTS_DIR
 
-  if [ "$DRY_RUN" -eq "0" ]; then
-    run_coremark
-    run_dhrystone
-    run_whetstone
+  if [ "$DRY_RUN" == "0" ]; then
 
-    if [ "$RUN_NETWORK" -eq "1" ]; then
+    if [ "$JUST_RUN_NETWORK" == "0" ]; then
+      run_coremark
+      run_dhrystone
+      run_whetstone
+    fi
+
+    if [ "$RUN_NETWORK" == "1" ]; then
       if [ ! -z "$REMOTE_IP" ]; then
         run_iperf
         run_ping
