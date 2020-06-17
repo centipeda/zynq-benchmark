@@ -1,8 +1,0 @@
-Dhrystone with registers run results: [3030303.0, 3125000.0, 3030303.0, 3125000.0, 3030303.0, 3125000.0, 3030303.0, 3125000.0, 3125000.0, 3030303.0]
-Mean: 3077651.5 Dhrystones per second
-Standard deviation: 49909.70126416084
-Mean VAX Dhrystones per second: 1751.6513944223107 DMIPS
-Dhrystone without registers run results: [3030303.0, 3125000.0, 3125000.0, 3030303.0, 3030303.0, 3125000.0, 3125000.0, 3030303.0, 3125000.0]
-Mean: 3082912.4444444445 Dhrystones per second
-Standard deviation: 49909.70126416084
-Mean VAX Dhrystones per second: 1754.6456712831216 DMIPS
