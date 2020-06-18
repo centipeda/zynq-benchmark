@@ -15,12 +15,11 @@ SRC_DIR="$THIS_DIR/benchmark_src"
 SCRIPTS_DIR="$THIS_DIR/benchmark_scripts"
 DOWNLOAD_SOURCE="1"
 MACHINE_NAME="speedyboi"  # "hostname" command not necessarily installed, that's done below
-CHECK_PACKAGES="0"
+CHECK_PACKAGES="0"  # by default, don't check to see that appropriate packages are installed
 ARCH=$(uname -m)  # get this machine's architecture
 RUN_NETWORK="0"  # by default, don't run networking tests with iperf and ping
-JUST_RUN_NETWORK="0"  # if true, only run networking tests
+RUN_BENCHMARKS="1"  # if true, run basic benchmarking tests (Coremark, Dhrystone, Whetstone)
 PROCESS_RESULTS="1"  # by default, perform statistical analysis on benchmarking results using python3
-DRY_RUN="0"
 
 # Automatically detect number of threads
 if [ $(command -v nproc) ] ; then
@@ -43,6 +42,12 @@ Arguments:
 -r, --just-raw-data           By default, this script performs basic statistical analysis on benchmark scores
                               (mean, std. deviation), installing Python 3 if it isn't already. This option
                               disables both of those.
+
+-p, --process-results [results dir]
+
+                              Only process results, don't run any benchmarks. (Basically, the opposite of the
+                              -r flag.) Useful if you want to process benchmarking results on a different machine
+                              than you ran the tests.
 
 -c, --check-pkgs              Checks if the required commands are installed - git if downloading coremark
                               source, iperf3 if running networking tests, python3 if processing information.
@@ -89,7 +94,7 @@ function check_pkgs {
     MACHINE_NAME="$(hostname)"
   fi
 
-  if [ "$JUST_RUN_NETWORK" == "0" ]; then
+  if [ "$RUN_BENCHMAKRKS" != "0" ]; then
     if ! isinstalled gcc; then
       echo "To run benchmarks, please install some version of gcc first."
       CHECK_SUCCESS=0
@@ -331,15 +336,15 @@ function run_ping {
 
 # Processes results stored in text file in RESULTS_DIR.
 function process_results {
-  echo "Processing results.txt files using python3..."
+  echo "Processing raw results files using python3..."
 
-  if [ "$JUST_RUN_NETWORK" -eq "0" ]; then
+  if [ -f $RESULTS_DIR/coremark.txt ]; then  # coremark is chosen randomly from the three
     python3 $SCRIPTS_DIR/process_results.py coremark $RESULTS_DIR/coremark.txt | tee $RESULTS_DIR/results_summary.txt
     python3 $SCRIPTS_DIR/process_results.py dhrystone $RESULTS_DIR/dhrystone.txt | tee -a $RESULTS_DIR/results_summary.txt
     python3 $SCRIPTS_DIR/process_results.py whetstone $RESULTS_DIR/whetstone.txt | tee -a $RESULTS_DIR/results_summary.txt
   fi
 
-  if [ ! -z "$REMOTE_IP" ]; then
+  if [ -d $RESULTS_DIR/iperf ]; then
     python3 $SCRIPTS_DIR/process_iperf.py $RESULTS_DIR/iperf
     # no need to process ping
   fi
@@ -347,46 +352,42 @@ function process_results {
 }
 
 function main {
-  # if [ $# -eq 0 ]; then
-  #   usage 1
-  # fi
 
   while [ $# -gt 0 ]; do
     case $1 in
       -h|--help)
         usage 0
         ;;
-      -g|--gcc)
-        shift
-        GCC="$1"
-        ;;
       -p|--process-results)
+        shift
+        RUN_BENCHMARKS=0
+        RUN_NETWORK=0
         PROCESS_RESULTS=1
-        ;;
-      --dry-run)
-        DRY_RUN=1
+        RESULTS_DIR="$1"
         ;;
       -r|--just-raw-data)
-        PROCESS_RESULTS="0"
+        PROCESS_RESULTS=0
         ;;
       -d|--dry-run)
-        DRY_RUN="1"
+        RUN_BENCHMARK=0
+        RUN_NETWORK=0
+        PROCESS_RESULTS=0
         ;;
       -c|--check-pkgs)
-        CHECK_PACKAGES="1"
+        CHECK_PACKAGES=1
         ;;
       --no-download)
-        DOWNLOAD_SOURCE="0"
+        DOWNLOAD_SOURCE=0
         ;;
       -n|--network-test)
         shift
-        RUN_NETWORK="1"
+        RUN_NETWORK=1
         REMOTE_IP="$1"
         ;;
       -j|--just-network)
         shift
-        RUN_NETWORK="1"
-        JUST_RUN_NETWORK="1"
+        RUN_NETWORK=1
+        RUN_BENCHMARKS=0
         REMOTE_IP="$1"
         ;;
       *)
@@ -400,8 +401,11 @@ function main {
     check_pkgs
   fi
 
-
-  RESULTS_DIR=$(date +"$THIS_DIR/${MACHINE_NAME}_results_%Y%m%d_%H%M%S")
+  echo "RESULTS DIR: $RESULTS_DIR"
+  if [ -z "$RESULTS_DIR" ]; then
+    RESULTS_DIR=$(date +"$THIS_DIR/${MACHINE_NAME}_results_%Y%m%d_%H%M%S")
+  fi
+  echo "RESULTS DIR: $RESULTS_DIR"
 
   echo $0, $(date +"%Y-%m-%d %H:%M:%S"), selected parameters:
   echo "THIS_DIRECTORY:           $THIS_DIR"
@@ -410,40 +414,35 @@ function main {
   echo "RESULTS_DIRECTORY:        $RESULTS_DIR"
   echo "CHECK_PACKAGES:           $CHECK_PACKAGES"
   echo "RUN_NETWORK_TESTS:        $RUN_NETWORK"
-  echo "JUST_RUN_NETWORK_TESTS:   $JUST_RUN_NETWORK"
+  echo "RUN_BENCHMARK_TESTS:      $RUN_BENCHMARKS"
   echo "PROCESS_RESULTS:          $PROCESS_RESULTS"
   echo "DOWNLOAD_COREMARK_SOURCE: $DOWNLOAD_SOURCE"
-  echo "DRY_RUN:                  $DRY_RUN"
   echo "THREADS:                  $THREADS"
 
   setup $RESULTS_DIR
 
-  if [ "$DRY_RUN" == "0" ]; then
-
-    if [ "$JUST_RUN_NETWORK" == "0" ]; then
-      run_coremark
-      run_dhrystone
-      run_whetstone
-    fi
-
-    if [ "$RUN_NETWORK" == "1" ]; then
-      if [ ! -z "$REMOTE_IP" ]; then
-        run_iperf
-        run_ping
-      else
-        echo "REMOTE_IP option for -n not defined."
-      fi
-    fi
-
-    # Process results.txt files
-    if [ "$PROCESS_RESULTS" != "0" ]; then
-      process_results
-    fi
-
-    echo
-    echo "Benchmarking process complete! The run results have been stored in $RESULTS_DIR."
-
+  if [ "$RUN_BENCHMARKS" != "0" ]; then
+    run_coremark
+    run_dhrystone
+    run_whetstone
   fi
+
+  if [ "$RUN_NETWORK" != "0" ]; then
+    if [ ! -z "$REMOTE_IP" ]; then
+      run_iperf
+      run_ping
+    else
+      echo "REMOTE_IP option for -n not defined."
+    fi
+  fi
+
+  # Process results.txt files
+  if [ "$PROCESS_RESULTS" != "0" ]; then
+    process_results $RESULTS_DIR
+  fi
+
+  echo
+  echo "Benchmarking process complete! The run results have been stored in $RESULTS_DIR."
 
   echo "Exiting program."
 
