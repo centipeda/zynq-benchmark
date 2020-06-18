@@ -14,7 +14,7 @@ THIS_DIR="$(dirname $0)"
 SRC_DIR="$THIS_DIR/benchmark_src"
 SCRIPTS_DIR="$THIS_DIR/benchmark_scripts"
 DOWNLOAD_SOURCE="1"
-MACHINE_NAME="$(hostname)"
+MACHINE_NAME="speedyboi"  # "hostname" command not necessarily installed, that's done below
 CHECK_PACKAGES="0"
 ARCH=$(uname -m)  # get this machine's architecture
 RUN_NETWORK="0"  # by default, don't run networking tests with iperf and ping
@@ -80,38 +80,48 @@ function check_pkgs {
     fi
   }
 
-  CHECK_SUCCESS = "1"  # Stays a one until something isn't installed, then turns zero,
-                       # which causes the program to exit after check_pkgs
+  CHECK_SUCCESS=1  # Stays a one until something isn't installed, then turns zero,
+                   # which causes the program to exit after check_pkgs
+
+  if ! isinstalled hostname; then
+    echo "Command 'hostname' not installed. Setting this machine's name to 'speedyboi'."
+  else
+    MACHINE_NAME="$(hostname)"
+  fi
 
   if [ "$JUST_RUN_NETWORK" == "0" ]; then
     if ! isinstalled gcc; then
       echo "To run benchmarks, please install some version of gcc first."
-      CHECK_SUCCESS = 0
+      CHECK_SUCCESS=0
     else
       echo "This benchmarking suite uses gcc to compile and run benchmarks."
       echo "Please ensure that you have your preferred version installed - feel free to ctrl-C now to check."
       echo
+    fi
+    if ! isinstalled make; then
+      echo "To run benchmarks, please install some version of make first."
+      CHECK_SUCCESS=0
     fi
   fi
 
   if [ "$DOWNLOAD_SOURCE" != "0" ]; then
     if ! isinstalled git; then
       echo "To download coremark source, please install git first."
-      CHECK_SUCCESS = 0
+      CHECK_SUCCESS=0
     fi
   fi
 
   if [ "$RUN_NETWORK" != "0" ]; then
     if ! isinstalled iperf3; then
       echo "To run network tests, please install iperf3 first."
-      CHECK_SUCCESS = 0
+      CHECK_SUCCESS=0
     fi
   fi
 
   if [ "$PROCESS_RESULTS" != "0" ]; then
     if ! isinstalled python3; then
       echo "To process results, please install python3 first."
-      CHECK_SUCCESS = 0
+      CHECK_SUCCESS=0
     fi
     if [ "$RUN_NETWORK" != "0" ]; then
       echo "To process network benchmarking results, matplotlib and numpy python packages must be installed."
@@ -120,7 +130,7 @@ function check_pkgs {
       select yn in "Yes" "No"; do
           case $yn in
               Yes ) make install; break;;
-              No ) CHECK_SUCCESS = 0;;
+              No ) CHECK_SUCCESS=0;;
               * ) echo "Please enter 'Yes' or 'No'."
           esac
       done
