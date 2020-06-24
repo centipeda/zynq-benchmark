@@ -1,0 +1,10 @@
+C Converted Double Precision Whetstones: 100000.0 MIPS
+C Converted Double Precision Whetstones: 100000.0 MIPS
+C Converted Double Precision Whetstones: 50000.0 MIPS
+C Converted Double Precision Whetstones: 100000.0 MIPS
+C Converted Double Precision Whetstones: 100000.0 MIPS
+C Converted Double Precision Whetstones: 50000.0 MIPS
+C Converted Double Precision Whetstones: 100000.0 MIPS
+C Converted Double Precision Whetstones: 100000.0 MIPS
+C Converted Double Precision Whetstones: 50000.0 MIPS
+C Converted Double Precision Whetstones: 100000.0 MIPS
