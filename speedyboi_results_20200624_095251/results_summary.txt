@@ -1,0 +1,17 @@
+--- Coremark Results ---
+Run results: [107704.217293, 94420.347585, 94195.219593, 94292.365265, 94879.473419, 94809.196492, 94381.359681, 94772.693618, 95218.258101, 94904.798624]
+Mean: 95957.7929671
+Standard deviation: 4139.912710633861
+--- Dhrystone Results ---
+Dhrystone with registers run results: [50000000.0, 33333334.0, 50000000.0, 50000000.0, 50000000.0, 33333334.0, 50000000.0, 50000000.0, 50000000.0, 50000000.0]
+Mean: 46666666.8 Dhrystones per second
+Standard deviation: 7027283.408171717
+Mean VAX Dhrystones per second: 26560.4250426864 DMIPS
+Dhrystone without registers run results: [50000000.0, 33333334.0, 50000000.0, 50000000.0, 50000000.0, 50000000.0]
+Mean: 47222222.333333336 Dhrystones per second
+Standard deviation: 6804137.90223219
+Mean VAX Dhrystones per second: 26876.620565357618 DMIPS
+--- Whetstone Results ---
+Run results: [100000.0, 50000.0, 50000.0, 50000.0, 50000.0, 50000.0, 100000.0, 50000.0, 50000.0, 50000.0]
+Mean: 60000.0
+Standard deviation: 21081.851067789194
