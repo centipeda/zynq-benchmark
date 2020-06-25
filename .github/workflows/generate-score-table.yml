@@ -10,7 +10,7 @@ jobs:
         steps:
             # testing with hello-world action
             - name: hello world
-            uses: actions/hello-world-javascript@v1
-            with:
-                who-to-greet: 'you'
-            id: hello
+              uses: actions/hello-world-javascript@v1
+              with:
+                  who-to-greet: 'you'
+              id: hello
