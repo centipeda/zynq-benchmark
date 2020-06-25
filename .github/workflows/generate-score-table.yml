@@ -1,0 +1,16 @@
+name: Regenerate HTML table of benchmark scores
+on:
+    push:
+        branches:
+            - master
+jobs:
+    build:
+        name: rebuild HTML table
+        runs-on: ubuntu-latest
+        steps:
+            # testing with hello-world action
+            - name: hello world
+            uses: actions/hello-world-javascript@v1
+            with:
+                who-to-greet: 'you'
+            id: hello
