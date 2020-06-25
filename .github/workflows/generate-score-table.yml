@@ -17,7 +17,7 @@ jobs:
             - name: Install dependencies
               run: python -m pip install pyyaml
             - name: Run table generator script
-              run: python ./docs/generate_table.py ./benchmark_results | tee docs/_includes/new_table.html
+              run: python ./docs/generate_table.py ./benchmark_results | tee docs/_includes/table.html
             - name: Add & push changes to repository
               run: | 
                 git config --local user.email "test@github.com"

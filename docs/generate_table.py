@@ -25,7 +25,7 @@ for resultDir in os.listdir(RESULTS_DIR):
     if summaryFiles:
         with open(summaryFiles[0]) as sFile:
             print("  <tr>")
-            print(f"<td>{summaryFiles[0]}</td>")
+            print(f"<td>{resultDir}</td>")
             scores = yaml.load(sFile, Loader=yaml.BaseLoader)
             for header in HEADERS:
                 print(f"    <td>{scores[header]['mean']}</td>")
