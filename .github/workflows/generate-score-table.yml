@@ -24,7 +24,7 @@ jobs:
             - name: Add changes
               run: git add docs/
             - name: Commit changes
-              run: git commit -m "workflow: regenerate HTML table"
+              run: git commit -m "github workflow -- regenerate HTML table"
             - name: Pull from master
               run: git fetch origin master
             - name: Commit changes
