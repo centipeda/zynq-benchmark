@@ -5,7 +5,7 @@ import sys
 import yaml
 from collections import OrderedDict
 
-RESULTS_DIR = "../benchmark_results"
+RESULTS_DIR = sys.argv[1]
 HEADERS = OrderedDict((
     ("coremark", "Coremark"),
     ("whetstone", "Whetstone"),

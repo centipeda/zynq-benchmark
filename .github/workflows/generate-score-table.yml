@@ -9,8 +9,24 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             # testing with hello-world action
-            - name: hello world
-              uses: actions/hello-world-javascript-action@v1
-              with:
-                  who-to-greet: 'you'
-              id: hello
+            - uses: actions/checkout@v2
+            - name: Check out repo
+            - name: Set up Python
+                uses: actions/setup-python@v2
+                with:
+                    python-version: '3.x'
+            - name: Install dependencies
+                run: python -m pip install pyyaml
+            - name: Run table generator script
+                run: python ./docs/generate_table.py ./benchmark_results > docs/_includes/new_table.html
+            - name: Check changes
+                run: git status
+            - name: Add changes
+                run: git add docs/
+            - name: Commit changes
+                run: git commit -m "workflow: regenerate HTML table"
+            - name: Pull from master
+                run: git fetch origin master
+            - name: Commit changes
+                run: git push origin HEAD:master
+            
