@@ -336,10 +336,11 @@ function run_ping {
 function process_results {
   echo "Processing raw results files using python3..."
 
-  if [ -f $RESULTS_DIR/coremark.txt ]; then  # coremark is chosen randomly from the three
-    python3 $SCRIPTS_DIR/process_results.py coremark $RESULTS_DIR/coremark.txt | tee $RESULTS_DIR/results_summary.txt
-    python3 $SCRIPTS_DIR/process_results.py dhrystone $RESULTS_DIR/dhrystone.txt | tee -a $RESULTS_DIR/results_summary.txt
-    python3 $SCRIPTS_DIR/process_results.py whetstone $RESULTS_DIR/whetstone.txt | tee -a $RESULTS_DIR/results_summary.txt
+  if [ "$JUST_RUN_NETWORK" -eq "0" ]; then
+    python3 $SCRIPTS_DIR/process_results.py --coremark-file $RESULTS_DIR/coremark.txt \
+                                            --dhrystone-file $RESULTS_DIR/dhrystone.txt \
+                                            --whetstone-file $RESULTS_DIR/whetstone.txt \
+                                            --output-file $RESULTS_DIR/summary.txt
   fi
 
   if [ -d $RESULTS_DIR/iperf ]; then
@@ -389,7 +390,6 @@ function main {
         REMOTE_IP="$1"
         ;;
       *)
-        MACHINE_NAME="$1"
         ;;
     esac
     shift
