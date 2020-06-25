@@ -1,17 +1,18 @@
---- Coremark Results ---
-Run results: [17863.667736, 17693.421264, 17211.030706, 17383.059418, 17563.467987, 17612.68113, 17677.782242, 17699.115044, 17831.813576, 18027.615028]
-Mean: 17656.3654131
-Standard deviation: 235.41909479990701
---- Dhrystone Results ---
-Dhrystone with registers run results: [7692307.5, 8333333.5, 7692307.5, 8333333.5, 7692307.5, 8333333.5, 7692307.5, 8333333.5, 7692307.5, 8333333.5]
-Mean: 8012820.5 Dhrystones per second
-Standard deviation: 337850.3665645159
-Mean VAX Dhrystones per second: 4560.512521343198 DMIPS
-Dhrystone without registers run results: [8333333.5, 7692307.5, 8333333.5, 7692307.5, 8333333.5, 8333333.5]
-Mean: 8119658.166666667 Dhrystones per second
-Standard deviation: 331024.4029981274
-Mean VAX Dhrystones per second: 4621.3193891102255 DMIPS
---- Whetstone Results ---
-Run results: [20000.0, 16666.7, 20000.0, 16666.7, 20000.0, 16666.7, 20000.0, 16666.7, 20000.0, 20000.0]
-Mean: 18666.68
-Standard deviation: 1721.308718388424
+coremark:
+    run_results: [17863.667736, 17693.421264, 17211.030706, 17383.059418, 17563.467987, 17612.68113, 17677.782242, 17699.115044, 17831.813576, 18027.615028]
+    mean: 17656.3654131
+    standard_deviation: 235.41909479990701
+dhrystone_with_registers:
+    run_results: [7692307.5, 8333333.5, 7692307.5, 8333333.5, 7692307.5, 8333333.5, 7692307.5, 8333333.5, 7692307.5, 8333333.5]
+    mean: 8012820.5 Dhrystones per second
+    standard_deviation: 337850.3665645159
+    mean_vax_dhrystones_per_second: 4560.512521343198 DMIPS
+dhrystone_without_registers:
+    run_results: [8333333.5, 7692307.5, 8333333.5, 7692307.5, 8333333.5, 8333333.5]
+    mean: 8119658.166666667 Dhrystones per second
+    standard_deviation: 331024.4029981274
+    mean_vax_dhrystones_per_second: 4621.3193891102255 DMIPS
+whetstone:
+    run_results: [20000.0, 16666.7, 20000.0, 16666.7, 20000.0, 16666.7, 20000.0, 16666.7, 20000.0, 20000.0]
+    mean: 18666.68
+    standard_deviation: 1721.308718388424

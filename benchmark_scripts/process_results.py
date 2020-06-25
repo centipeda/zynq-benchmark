@@ -8,15 +8,15 @@ parser = argparse.ArgumentParser(description="""
     Process the benhcmarks run by the benchmarking script. Outputs in YAML format.
     """
 )
-parser.add_argument("--coremark-file", help="""
+parser.add_argument("-c", "--coremark-file", help="""
     The file containing the output from a set of Coremark runs. This should contain
     a series of lines of data, each one from the last line of the run1.log file created by each
     run of Coremark.
     """)
-parser.add_argument("--whetstone-file", help="""
+parser.add_argument("-w", "--whetstone-file", help="""
     The file containing the output from a set of Whetstone runs.
 """)
-parser.add_argument("--dhrystone-file", help="""
+parser.add_argument("-d", "--dhrystone-file", help="""
     The file containing the output from a set of Dhrystone runs.
 """)
 parser.add_argument("-o", "--output-file", help="File to save summary to. Will default to stdin.")
@@ -76,9 +76,6 @@ if processing:
         with open(args.output_file, 'a') as outFile:
             outFile.write(summary)
 exit()
-
-
-
 
 target = sys.argv[1]
 resultFile = sys.argv[2]

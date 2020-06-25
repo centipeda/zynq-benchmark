@@ -1,0 +1,18 @@
+coremark:
+    run_results: [7919.746568, 7790.690125, 7924.453543, 7914.52315, 7916.089452, 7918.701333, 7937.557878, 7929.690081, 7908.785342, 7930.214116]
+    mean: 7909.0451588
+    standard_deviation: 42.45272516485238
+dhrystone_with_registers:
+    run_results: [5882353.0, 5555555.5, 5555555.5, 5555555.5, 5555555.5, 5882353.0, 5555555.5, 5555555.5, 5555555.5, 5882353.0]
+    mean: 5653594.75 Dhrystones per second
+    standard_deviation: 157858.1897404281
+    mean_vax_dhrystones_per_second: 3217.7545532157083 DMIPS
+dhrystone_without_registers:
+    run_results: [5555555.5, 5555555.5, 5882353.0, 5882353.0, 5555555.5, 5555555.5, 5555555.5, 5882353.0, 5555555.5]
+    mean: 5664488.0 Dhrystones per second
+    standard_deviation: 163398.75
+    mean_vax_dhrystones_per_second: 3223.954467842914 DMIPS
+whetstone:
+    run_results: [12500.0, 12500.0, 12500.0, 12500.0, 14285.7, 12500.0, 12500.0, 12500.0, 14285.7, 12500.0]
+    mean: 12857.14
+    standard_deviation: 752.9172290350236
