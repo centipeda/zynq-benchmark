@@ -95,7 +95,7 @@ function check_pkgs {
     MACHINE_NAME="$(hostname)"
   fi
 
-  if [ "$RUN_BENCHMAKRKS" != "0" ]; then
+  if [ "$RUN_BENCHMARKS" != "0" ]; then
     if ! isinstalled gcc; then
       echo "To run benchmarks, please install some version of gcc first."
       CHECK_SUCCESS=0
