@@ -8,9 +8,8 @@ jobs:
         name: rebuild HTML table
         runs-on: ubuntu-latest
         steps:
-            # testing with hello-world action
             - uses: actions/checkout@v2
-            - name: Check out repo
+              name: Check out repo
             - name: Set up Python
               uses: actions/setup-python@v2
               with:
