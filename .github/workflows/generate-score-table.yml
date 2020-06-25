@@ -1,8 +1,9 @@
 name: Regenerate HTML table of benchmark scores
 on:
     push:
-        branches:
-            - master
+        paths:
+            - 'benchmark_results/**'
+            - 'docs/generate_table.py'
 jobs:
     build:
         name: rebuild HTML table
