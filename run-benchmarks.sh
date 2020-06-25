@@ -15,7 +15,7 @@ SRC_DIR="$THIS_DIR/benchmark_src"
 SCRIPTS_DIR="$THIS_DIR/benchmark_scripts"
 DOWNLOAD_SOURCE="1"
 MACHINE_NAME="speedyboi"  # "hostname" command not necessarily installed, that's done below
-CHECK_PACKAGES="0"  # by default, don't check to see that appropriate packages are installed
+CHECK_PACKAGES="1"
 ARCH=$(uname -m)  # get this machine's architecture
 RUN_NETWORK="0"  # by default, don't run networking tests with iperf and ping
 RUN_BENCHMARKS="1"  # if true, run basic benchmarking tests (Coremark, Dhrystone, Whetstone)
@@ -74,6 +74,7 @@ EOF
 # Check if git, python3 (if processing), and iperf3 (if network tests) are installed.
 # Aborts the script if not all appropriate packages are installed.
 function check_pkgs {
+  echo "Checking for prerequisite packages..."
 
   # Checks if a shell command with the given name exists.
   # Args: [the command: e.g., git, bash, python3]
@@ -199,18 +200,15 @@ function run_coremark {
   fi
 
   XCFLAGS="-O3 -DMULTITHREAD=${THREADS} -DUSE_PTHREAD -pthread -lrt ${arm}"
-  echo $XCFLAGS
 
   # Run coremark
   log_hw "coremark.exe" "$RESULTS_DIR" &
+  make -s -C $SRC_DIR/coremark clean
   for n in {1..10}
   do
-      echo "Now starting run $n:"
-      make -C $SRC_DIR/coremark clean
-      make -C $SRC_DIR/coremark XCFLAGS="$XCFLAGS"
-      echo "Run #$n: $(tail -n 1 $SRC_DIR/coremark/run1.log)"
-      tail -n 1 $SRC_DIR/coremark/run1.log >> $RESULTS_DIR/coremark.txt
-      echo "Finished with run $n."
+    make -s -C $SRC_DIR/coremark XCFLAGS="$XCFLAGS"
+    echo "Run #$n: $(tail -n 1 $SRC_DIR/coremark/run1.log)"
+    tail -n 1 $SRC_DIR/coremark/run1.log >> $RESULTS_DIR/coremark.txt
   done
 
   # clean up
@@ -229,7 +227,7 @@ function run_dhrystone {
   make -C $SRC_DIR/dhrystone clean
 
   # Set Makefile variables.
-  TIME_FUNC="-DTIME" # Might need to be "-DTIME" instead, depending on the system.
+  TIME_FUNC="-DTIME" # Might need to be "-DTIME or -DTIMES" instead, depending on the system.
   if [ $ARCH == "arm" ]; then
     GCCOPTIM="-O -O3 -Ofast --mcpu=cortex-a9 -mfpu=vfpv3-fp16"
   else
