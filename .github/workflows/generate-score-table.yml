@@ -12,21 +12,21 @@ jobs:
             - uses: actions/checkout@v2
             - name: Check out repo
             - name: Set up Python
-                uses: actions/setup-python@v2
-                with:
-                    python-version: '3.x'
+              uses: actions/setup-python@v2
+              with:
+                python-version: '3.x'
             - name: Install dependencies
-                run: python -m pip install pyyaml
+              run: python -m pip install pyyaml
             - name: Run table generator script
-                run: python ./docs/generate_table.py ./benchmark_results > docs/_includes/new_table.html
+              run: python ./docs/generate_table.py ./benchmark_results > docs/_includes/new_table.html
             - name: Check changes
-                run: git status
+              run: git status
             - name: Add changes
-                run: git add docs/
+              run: git add docs/
             - name: Commit changes
-                run: git commit -m "workflow: regenerate HTML table"
+              run: git commit -m "workflow: regenerate HTML table"
             - name: Pull from master
-                run: git fetch origin master
+              run: git fetch origin master
             - name: Commit changes
-                run: git push origin HEAD:master
+              run: git push origin HEAD:master
             
