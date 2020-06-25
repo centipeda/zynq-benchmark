@@ -20,7 +20,7 @@ jobs:
               run: python ./docs/generate_table.py ./benchmark_results | tee docs/_includes/table.html
             - name: Add & push changes to repository
               run: | 
-                git config --local user.email "test@github.com"
+                git config --local user.email "centipeda@github.com"
                 git config --local user.name "GitHub Workflow Runner"
                 git status
                 git add docs/
