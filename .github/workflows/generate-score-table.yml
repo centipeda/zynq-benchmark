@@ -1,0 +1,31 @@
+name: Regenerate HTML table of benchmark scores
+on:
+    push:
+        paths:
+            - 'benchmark_results/**'
+            - 'docs/generate_table.py'
+jobs:
+    build:
+        name: rebuild HTML table
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+              name: Check out repo
+            - name: Set up Python
+              uses: actions/setup-python@v2
+              with:
+                python-version: '3.x'
+            - name: Install dependencies
+              run: python -m pip install pyyaml
+            - name: Run table generator script
+              run: python ./docs/generate_table.py ./benchmark_results | tee docs/_includes/table.html
+            - name: Add & push changes to repository
+              run: | 
+                git config --local user.email "centipeda@github.com"
+                git config --local user.name "GitHub Workflow Runner"
+                git status
+                git add docs/
+                git commit -m "github workflow -- regenerate HTML table"
+                git fetch origin master
+                git push origin HEAD:master
+            
