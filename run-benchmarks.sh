@@ -336,7 +336,7 @@ function run_ping {
 function process_results {
   echo "Processing raw results files using python3..."
 
-  if [ "$JUST_RUN_NETWORK" -eq "0" ]; then
+  if [ "$RUN_BENCHMARKS" != "0" ]; then
     python3 $SCRIPTS_DIR/process_results.py --coremark-file $RESULTS_DIR/coremark.txt \
                                             --dhrystone-file $RESULTS_DIR/dhrystone.txt \
                                             --whetstone-file $RESULTS_DIR/whetstone.txt \
