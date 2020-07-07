@@ -12,7 +12,9 @@
 
 THIS_DIR="$(dirname $0)"
 SRC_DIR="$THIS_DIR/benchmark_src"
+BASE_RESULTS_DIR="$THIS_DIR/benchmark_results"
 SCRIPTS_DIR="$THIS_DIR/benchmark_scripts"
+INFORMATION_FILE="information.txt" # file to store extra info about benchmark run
 DOWNLOAD_SOURCE="1"
 MACHINE_NAME="speedyboi"  # "hostname" command not necessarily installed, that's done below
 CHECK_PACKAGES="1"
@@ -350,6 +352,16 @@ function process_results {
 
 }
 
+function create_info_file {
+  tee $RESULTS_DIR/$INFORMATION_FILE <<EOF
+name:
+compiler:
+cpu:
+date: $(date +"%B %e, %Y")
+notes:
+EOF
+}
+
 function main {
 
   while [ $# -gt 0 ]; do
@@ -368,7 +380,7 @@ function main {
         PROCESS_RESULTS=0
         ;;
       -d|--dry-run)
-        RUN_BENCHMARK=0
+        RUN_BENCHMARKS=0
         RUN_NETWORK=0
         PROCESS_RESULTS=0
         ;;
@@ -401,7 +413,7 @@ function main {
 
   echo "RESULTS DIR: $RESULTS_DIR"
   if [ -z "$RESULTS_DIR" ]; then
-    RESULTS_DIR=$(date +"$THIS_DIR/${MACHINE_NAME}_results_%Y%m%d_%H%M%S")
+    RESULTS_DIR=$(date +"$BASE_RESULTS_DIR/${MACHINE_NAME}_results_%Y%m%d_%H%M%S")
   fi
   echo "RESULTS DIR: $RESULTS_DIR"
 
@@ -436,8 +448,11 @@ function main {
 
   # Process results.txt files
   if [ "$PROCESS_RESULTS" != "0" ]; then
-    process_results $RESULTS_DIR
+    process_results
   fi
+
+  echo "Creating information file... please fill out the following fields in the file $RESULTS_DIR/$INFORMATION_FILE to provide context for these benchmarks." 
+  create_info_file
 
   echo
   echo "Benchmarking process complete! The run results have been stored in $RESULTS_DIR."
