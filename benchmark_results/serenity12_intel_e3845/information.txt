@@ -1,0 +1,5 @@
+name: Serenity 12
+compiler: n/a
+cpu: Intel Atom E3845
+date: n/a
+notes: 'Further analysis of benchmark scores here: https://indi.to/8cVzW'

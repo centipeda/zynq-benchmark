@@ -1,0 +1,5 @@
+name: Serenity 1.0
+compiler: n/a
+cpu: Intel i5-8365UE
+date: n/a
+notes: 'Further analysis of benchmark scores here: https://indi.to/8cVzW' 

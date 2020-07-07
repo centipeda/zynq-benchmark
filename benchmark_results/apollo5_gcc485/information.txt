@@ -1,0 +1,5 @@
+name: Apollo 5, Enclustra Mecury ZX1 Zynq-7000 Module
+compiler: gcc v4.8.5
+cpu: ARM Cortex-A9
+date: n/a
+notes:

@@ -1,0 +1,5 @@
+name: Enclustra Mars ZX2 Module, Mars PM3 Base Board, Zynq Z-7010
+compiler: n/a
+cpu: Arm Cortex-A9
+date: n/a
+notes:

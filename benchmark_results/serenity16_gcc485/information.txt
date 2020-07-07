@@ -1,0 +1,5 @@
+name: Serenity 16, nanoX-BT-E3845-2G
+compiler: gcc v4.8.5
+cpu: n/a
+date: n/a
+notes:
