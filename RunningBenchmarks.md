@@ -17,7 +17,9 @@
 
 ## Instructions
 
-After running the benchmarks, all results will be stored in a new directory named `$hostname_$date_$time/`. A new directory is created every time the benchmarking script is run. More information on the command-line flags that can be used with the script can be found by using the `-h` (`--help`) flag:
+After running the benchmarks, all results will be stored in a new directory named `$hostname_$date_$time/`. A new directory is created every time the benchmarking script is run. If you are planning to submit your scores to the upstream repository, please fill out the `information.txt` file created in the results directory before submitting your pull request.
+
+More information on the command-line flags that can be used with the script can be found by using the `-h` (`--help`) flag:
 
 ```
 $ ./run-benchmarks.sh --help
