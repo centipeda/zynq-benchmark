@@ -11,18 +11,4 @@ layout: default
 
   {% include table.html %}
 
-  <script>
-    console.log('sup');
-    const r = new XMLHttpRequest();
-    function callback() {
-      console.log(this.readyState);
-      console.log(this.status);
-      console.log(this.responseText);
-    }
-    r.addEventListener("load", callback);
-    r.open("GET", "/test-repo/assets/misc.txt");
-    r.open("GET", "/test-repo/assets/benchmark_results/coremark/pi_summary.txt");
-    r.send();
-  </script>
-
 </div>
