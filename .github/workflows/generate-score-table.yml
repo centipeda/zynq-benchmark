@@ -4,6 +4,13 @@ on:
         paths:
             - 'benchmark_results/**'
             - 'docs/generate_table.py'
+    workflow_dispatch:
+        inputs:
+            reason:
+              description: 'reason to run workflow'
+              required: false
+              default: 'force rebuild benchmark results table'
+
 jobs:
     build:
         name: rebuild HTML table
