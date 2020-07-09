@@ -40,7 +40,7 @@ for resultDir in os.listdir(RESULTS_BASE_DIR):
     except FileNotFoundError:
         print(f'No information file found in {os.path.join(RESULTS_BASE_DIR, resultDir, infoFile)}')
 
-    summaryFiles = glob.glob(os.path.join(RESULTS_BASE_DIR, resultDir, '*_summary.txt'))
+    summaryFiles = glob.glob(os.path.join(RESULTS_BASE_DIR, resultDir, '*summary.txt'))
     if summaryFiles:
         with open(summaryFiles[0]) as sFile:
             scores = yaml.load(sFile, Loader=yaml.BaseLoader)
