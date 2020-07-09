@@ -1,0 +1,16 @@
+coremark:
+    mean: 9373.28 
+    standard_deviation: 69.61
+    units: iterations per second
+dhrystone_with_registers:
+    mean: 5653594 
+    units: Dhrystones per second
+    standard_deviation: 157858
+dhrystone_without_registers:
+    mean: 5653594 
+    units: Dhrystones per second
+    standard_deviation: 157858
+whetstone:
+    mean: 21500 
+    standard_deviation: 2415
+    units: Whetstones per second
