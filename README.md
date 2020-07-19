@@ -29,6 +29,7 @@ Optionally, these instructions on [building Petalinux for a Zynq ](./zynq_build/
 
 ## Instructions
 
+If you plan to submit a pull request to bring your benchmark results into the repository's [table](https://centipeda.github.io/soc-benchmark), [fork](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) this repository and clone it locally. Otherwise, clone this repository to the computer you plan to run the benchmarks on.
 After running the benchmarks, all results will be stored in a new directory named `$hostname_$date_$time/`. A new directory is created every time the benchmarking script is run. If you are planning to submit your scores to the upstream repository, please fill out the `information.txt` file created in the results directory before submitting your pull request.
 
 More information on the command-line flags that can be used with the script can be found by using the `-h` (`--help`) flag:

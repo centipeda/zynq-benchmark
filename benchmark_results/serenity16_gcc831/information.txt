@@ -1,5 +1,5 @@
 name: Serenity 16
 compiler: gcc v8.3.1
-cpu: n/a
+cpu: Intel Atom E3845
 date: n/a
 notes: nanoX-BT-E3845-2G from https://www.adlinktech.com/Products/Computer_on_Modules/COMExpressType10/nanoX-BT?lang=en#tab-ordering

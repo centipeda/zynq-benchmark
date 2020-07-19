@@ -1,0 +1,8 @@
+coremark:
+    mean: 7169
+dhrystone_with_registers:
+    mean: 2242236.33
+dhrystone_without_registers:
+    mean: 2242245
+whetstone:
+    mean: 15714

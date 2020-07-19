@@ -1,0 +1,4 @@
+name: Trenz Elektronik TE0803 Module (Zynq UltraScale+)
+compiler: gcc v7
+cpu: Quad-Core ARM Cortex-A53
+date: n/a
