@@ -135,11 +135,11 @@ function check_pkgs {
       echo "To process network benchmarking results, matplotlib and numpy python packages must be installed."
       echo "This script cannot ascertain the status of installation of these packages."
       echo "Do you wish to exit the program and install these/check their status, or continue running?"
-      select yn in "Yes" "No"; do
+      select yn in Continue Halt; do
           case $yn in
-              Yes ) make install; break;;
-              No ) CHECK_SUCCESS=0;;
-              * ) echo "Please enter 'Yes' or 'No'."
+              Continue ) make install; break;;
+              Halt ) exit 1;;
+              * ) echo "Please enter '1' or '2'."
           esac
       done
     fi
@@ -370,11 +370,9 @@ function main {
         usage 0
         ;;
       -p|--process-results)
-        shift
         RUN_BENCHMARKS=0
         RUN_NETWORK=0
         PROCESS_RESULTS=1
-        RESULTS_DIR="$1"
         ;;
       -r|--just-raw-data)
         PROCESS_RESULTS=0
@@ -402,6 +400,7 @@ function main {
         REMOTE_IP="$1"
         ;;
       *)
+        RESULTS_DIR="$1"
         ;;
     esac
     shift
