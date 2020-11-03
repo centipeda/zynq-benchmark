@@ -302,7 +302,7 @@ function run_iperf {
   frame_size=1500
   step_size=2000
 
-  while [ $frame_size -lt 65508 ]
+  while [ $frame_size -lt  ]
   do
     echo "[" >> $RESULTS_DIR/iperf/iperf_result_${frame_size}.json
     i=0

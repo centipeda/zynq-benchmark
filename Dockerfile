@@ -4,4 +4,5 @@ RUN python3 -m pip install numpy matplotlib
 RUN git clone -b dockerfile https://github.com/centipeda/soc-benchmark.git
 RUN ls soc-benchmark
 
-CMD cd soc-benchmark && ./run-benchmarks.sh -j centipeda.cc results
+# CMD cd soc-benchmark && ./run-benchmarks.sh -j localhost results
+CMD iperf3 -c centipeda.cc > results.txt
